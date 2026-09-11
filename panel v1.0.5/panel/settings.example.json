@@ -1,0 +1,14 @@
+{
+    "language": "English",
+    "minimize_to_tray": true,
+    "panel_password": "",
+    "error_sound_type": "Default (Beep)",
+    "theme": "Discord Dark (Default)",
+    "log_save_level": "Save everything",
+    "max_ram_mb": 200,
+    "task_kill_enabled": false,
+    "rpc_enabled": false,
+    "backup_enabled": true,
+    "backup_on_start": false,
+    "backup_interval_hours": 24
+}

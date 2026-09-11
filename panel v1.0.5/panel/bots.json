@@ -1,0 +1,36 @@
+{
+    "active_bot": "DBM TESTER",
+    "bots": {
+        "DBM TESTER": {
+            "name": "DBM TESTER",
+            "path": "..\\..\\panelbot\\bot.py",
+            "autostart": false,
+            "test_mode": false,
+            "restart_days": 0,
+            "restart_hours": 0,
+            "restart_mins": 0,
+            "midnight_restart": false,
+            "error_sound": true,
+            "volume": 50,
+            "allowed_discord_ids": [],
+            "total_commands": 0,
+            "weekly_uptime_seconds": 70,
+            "auto_restart_on_crash": false,
+            "crash_restart_delay": 10,
+            "activity_enabled": true,
+            "activity_type": "Playing",
+            "activity_text": "treszt 1",
+            "activity_interval_minutes": 1,
+            "activity_loop": [
+                {
+                    "type": "Playing",
+                    "text": "treszt 1"
+                },
+                {
+                    "type": "Listening",
+                    "text": "teszt 1"
+                }
+            ]
+        }
+    }
+}

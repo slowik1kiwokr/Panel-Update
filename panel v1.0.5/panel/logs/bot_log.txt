@@ -1,0 +1,842 @@
+2026-09-10 19:32:32 [INFO] A Discord Bot Vezérlőpult sikeresen elindult.
+2026-09-10 19:40:13 [INFO] A Discord Bot Vezérlőpult sikeresen elindult.
+2026-09-10 19:40:55 [INFO] A Discord Bot Vezérlőpult sikeresen elindult.
+2026-09-10 20:00:11 [INFO] A Discord Bot Vezérlőpult sikeresen elindult.
+2026-09-10 20:07:05,169 [ERROR] An error occurred when calling message handler
+Traceback (most recent call last):
+  File "C:\Users\Nukre\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\pystray\_win32.py", line 412, in _dispatcher
+    return int(icon._message_handlers.get(
+               ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        uMsg, lambda w, l: 0)(wParam, lParam) or 0)
+        ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "C:\Users\Nukre\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\pystray\_win32.py", line 224, in _on_notify
+    descriptors[index - 1](self)
+    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\Nukre\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\pystray\_base.py", line 328, in inner
+    callback(self)
+    ~~~~~~~~^^^^^^
+  File "C:\Users\Nukre\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\pystray\_base.py", line 453, in __call__
+    return self._action(icon, self)
+           ~~~~~~~~~~~~^^^^^^^^^^^^
+  File "C:\Users\Nukre\Desktop\bot panel\panel\panel.pyw", line 2429, in perform_exit
+    image = Image.new('RGB', (64, 64), color=(88, 101, 242))
+        ^^^^^^^^^^^^^^
+  File "C:\Users\Nukre\AppData\Local\Python\pythoncore-3.14-64\Lib\tkinter\__init__.py", line 2571, in __getattr__
+    return getattr(self.tk, attr)
+AttributeError: '_tkinter.tkapp' object has no attribute 'stop_tray'
+2026-09-10 20:14:42 [INFO] A Discord Bot Vezérlőpult sikeresen elindult.
+2026-09-10 20:15:09 [EVENT] Example plugin betöltve.
+2026-09-10 20:16:47,353 [ERROR] An error occurred when calling message handler
+Traceback (most recent call last):
+  File "C:\Users\Nukre\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\pystray\_win32.py", line 412, in _dispatcher
+    return int(icon._message_handlers.get(
+               ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        uMsg, lambda w, l: 0)(wParam, lParam) or 0)
+        ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "C:\Users\Nukre\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\pystray\_win32.py", line 224, in _on_notify
+    descriptors[index - 1](self)
+    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\Nukre\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\pystray\_base.py", line 328, in inner
+    callback(self)
+    ~~~~~~~~^^^^^^
+  File "C:\Users\Nukre\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\pystray\_base.py", line 453, in __call__
+    return self._action(icon, self)
+           ~~~~~~~~~~~~^^^^^^^^^^^^
+  File "C:\Users\Nukre\Desktop\bot panel\panel\panel.pyw", line 2429, in perform_exit
+    self.bots["Main Bot"] = self.create_bot_data("Main Bot")
+    ^^^^^^^^^^^^^^
+  File "C:\Users\Nukre\AppData\Local\Python\pythoncore-3.14-64\Lib\tkinter\__init__.py", line 2571, in __getattr__
+    return getattr(self.tk, attr)
+AttributeError: '_tkinter.tkapp' object has no attribute 'stop_tray'
+2026-09-10 20:18:23 [EVENT] Example plugin betöltve.
+2026-09-10 20:18:23 [INFO] A Discord Bot Vezérlőpult sikeresen elindult.
+2026-09-10 20:19:12 [EVENT] Example plugin betöltve.
+2026-09-10 20:19:12 [INFO] A Discord Bot Vezérlőpult sikeresen elindult.
+2026-09-10 20:23:18 [EVENT] Example plugin betöltve.
+2026-09-10 20:23:18 [INFO] A Discord Bot Vezérlőpult sikeresen elindult.
+2026-09-10 20:23:40 [EVENT] Example plugin betöltve.
+2026-09-10 20:23:40 [INFO] A Discord Bot Vezérlőpult sikeresen elindult.
+2026-09-10 20:26:24,833 [ERROR] An error occurred when calling message handler
+Traceback (most recent call last):
+  File "C:\Users\Nukre\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\pystray\_win32.py", line 412, in _dispatcher
+    return int(icon._message_handlers.get(
+               ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        uMsg, lambda w, l: 0)(wParam, lParam) or 0)
+        ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "C:\Users\Nukre\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\pystray\_win32.py", line 224, in _on_notify
+    descriptors[index - 1](self)
+    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\Nukre\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\pystray\_base.py", line 328, in inner
+    callback(self)
+    ~~~~~~~~^^^^^^
+  File "C:\Users\Nukre\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\pystray\_base.py", line 453, in __call__
+    return self._action(icon, self)
+           ~~~~~~~~~~~~^^^^^^^^^^^^
+  File "C:\Users\Nukre\Desktop\bot panel\panel\panel.pyw", line 2429, in perform_exit
+    if os.path.exists(BOTS_FILE):
+        ^^^^^^^^^^^^^^
+  File "C:\Users\Nukre\AppData\Local\Python\pythoncore-3.14-64\Lib\tkinter\__init__.py", line 2571, in __getattr__
+    return getattr(self.tk, attr)
+AttributeError: '_tkinter.tkapp' object has no attribute 'stop_tray'
+2026-09-10 20:26:26,257 [ERROR] An error occurred when calling message handler
+Traceback (most recent call last):
+  File "C:\Users\Nukre\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\pystray\_win32.py", line 412, in _dispatcher
+    return int(icon._message_handlers.get(
+               ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        uMsg, lambda w, l: 0)(wParam, lParam) or 0)
+        ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "C:\Users\Nukre\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\pystray\_win32.py", line 224, in _on_notify
+    descriptors[index - 1](self)
+    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\Nukre\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\pystray\_base.py", line 328, in inner
+    callback(self)
+    ~~~~~~~~^^^^^^
+  File "C:\Users\Nukre\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\pystray\_base.py", line 453, in __call__
+    return self._action(icon, self)
+           ~~~~~~~~~~~~^^^^^^^^^^^^
+  File "C:\Users\Nukre\Desktop\bot panel\panel\panel.pyw", line 2429, in perform_exit
+    if os.path.exists(BOTS_FILE):
+        ^^^^^^^^^^^^^^
+  File "C:\Users\Nukre\AppData\Local\Python\pythoncore-3.14-64\Lib\tkinter\__init__.py", line 2571, in __getattr__
+    return getattr(self.tk, attr)
+AttributeError: '_tkinter.tkapp' object has no attribute 'stop_tray'
+2026-09-10 20:26:35 [EVENT] Example plugin betöltve.
+2026-09-10 20:26:35 [INFO] A Discord Bot Vezérlőpult sikeresen elindult.
+2026-09-10 20:27:34 [EVENT] [kecske] Beállítások manuálisan elmentve.
+2026-09-10 20:28:47 [SUCCESS] [DBM TESTER] Bot folyamat elindítva (PID: 5560)
+2026-09-10 20:28:48 [INFO] [DBM TESTER] [2026-09-10 20:28:48] [INFO    ] discord.client: logging in using static token
+2026-09-10 20:28:50 [INFO] [DBM TESTER] [2026-09-10 20:28:50] [INFO    ] discord.gateway: Shard ID None has connected to Gateway (Session ID: 282ee253dea1635c09fc5e893161936a).
+2026-09-10 20:28:52 [INFO] [DBM TESTER] DBM TESTER v1.0.0 bejelentkezve: DBM | Tester#7338
+2026-09-10 20:28:53 [INFO] [DBM TESTER] Bot vezérlő sikeresen betöltve.
+2026-09-10 20:29:43,443 [INFO] Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+2026-09-10 20:29:43,445 [INFO] Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+2026-09-10 20:29:43,447 [INFO] Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+2026-09-10 20:29:43,448 [INFO] Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+2026-09-10 20:29:46,464 [INFO] Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+2026-09-10 20:29:46,466 [INFO] Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+2026-09-10 20:29:49,468 [INFO] Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+2026-09-10 20:29:49,469 [INFO] Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+2026-09-10 20:29:52,485 [INFO] Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+2026-09-10 20:29:52,486 [INFO] Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+2026-09-10 20:29:55,492 [INFO] Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+2026-09-10 20:29:55,493 [INFO] Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+2026-09-10 20:29:57,372 [INFO] Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+2026-09-10 20:29:57,373 [INFO] Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+2026-09-10 20:29:58,509 [INFO] Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+2026-09-10 20:29:58,510 [INFO] Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+2026-09-10 20:30:01,522 [INFO] Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+2026-09-10 20:30:01,523 [INFO] Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+2026-09-10 20:30:04,321 [INFO] Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+2026-09-10 20:30:04,322 [INFO] Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+2026-09-10 20:30:04,531 [INFO] Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+2026-09-10 20:30:04,533 [INFO] Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+2026-09-10 20:30:07,535 [INFO] Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+2026-09-10 20:30:07,536 [INFO] Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+2026-09-10 20:35:00 [EVENT] Example plugin betöltve.
+2026-09-10 20:35:00 [INFO] A Discord Bot Vezérlőpult sikeresen elindult.
+2026-09-10 20:35:21 [EVENT] Example plugin betöltve.
+2026-09-10 20:35:21 [INFO] A Discord Bot Vezérlőpult sikeresen elindult.
+2026-09-10 20:37:54 [EVENT] Example plugin betöltve.
+2026-09-10 20:37:54 [INFO] A Discord Bot Vezérlőpult sikeresen elindult.
+2026-09-10 20:43:45 [EVENT] Example plugin betöltve.
+2026-09-10 20:43:45 [INFO] A Discord Bot Vezérlőpult sikeresen elindult.
+2026-09-10 20:44:08 [EVENT] Example plugin betöltve.
+2026-09-10 20:44:08 [INFO] A Discord Bot Vezérlőpult sikeresen elindult.
+2026-09-10 20:44:12 [EVENT] Example plugin betöltve.
+2026-09-10 20:44:12 [INFO] A Discord Bot Vezérlőpult sikeresen elindult.
+2026-09-10 20:44:52 [EVENT] Example plugin betöltve.
+2026-09-10 20:44:52 [INFO] A Discord Bot Vezérlőpult sikeresen elindult.
+2026-09-10 20:48:26 [EVENT] Example plugin betöltve.
+2026-09-10 20:48:26 [INFO] A Discord Bot Vezérlőpult sikeresen elindult.
+2026-09-10 20:53:34 [EVENT] Example plugin betöltve.
+2026-09-10 20:53:34 [INFO] A Discord Bot Vezérlőpult sikeresen elindult.
+2026-09-10 20:58:19 [EVENT] Example plugin betöltve.
+2026-09-10 20:58:19 [INFO] A Discord Bot Vezérlőpult sikeresen elindult.
+2026-09-10 20:58:21 [SUCCESS] [DBM TESTER] Auto-start folyamat elindítva (PID: 17236)
+2026-09-10 20:58:22 [INFO] [DBM TESTER] [2026-09-10 20:58:22] [INFO    ] discord.client: logging in using static token
+2026-09-10 20:58:23 [INFO] [DBM TESTER] [2026-09-10 20:58:23] [INFO    ] discord.gateway: Shard ID None has connected to Gateway (Session ID: e0f6aa6c9d74aad683262ea5b0579e3d).
+2026-09-10 20:58:25 [INFO] [DBM TESTER] DBM TESTER v1.0.0 bejelentkezve: DBM | Tester#7338
+2026-09-10 20:58:25 [INFO] [DBM TESTER] Bot vezérlő sikeresen betöltve.
+2026-09-10 20:58:41 [EVENT] Example plugin betöltve.
+2026-09-10 20:58:41 [INFO] A Discord Bot Vezérlőpult sikeresen elindult.
+2026-09-10 20:58:42 [SUCCESS] [DBM TESTER] Auto-start folyamat elindítva (PID: 13132)
+2026-09-10 20:58:43 [INFO] [DBM TESTER] [2026-09-10 20:58:43] [INFO    ] discord.client: logging in using static token
+2026-09-10 20:58:45 [INFO] [DBM TESTER] [2026-09-10 20:58:45] [INFO    ] discord.gateway: Shard ID None has connected to Gateway (Session ID: 737931cae4eab97a39d1e14f70dd26d7).
+2026-09-10 20:58:47 [INFO] [DBM TESTER] DBM TESTER v1.0.0 bejelentkezve: DBM | Tester#7338
+2026-09-10 20:59:09 [EVENT] [DBM TESTER] Bot folyamat leállítva.
+2026-09-10 21:03:36 [EVENT] Example plugin betöltve.
+2026-09-10 21:03:36 [INFO] A Discord Bot Vezérlőpult sikeresen elindult.
+2026-09-10 21:03:37 [SUCCESS] [DBM TESTER] Auto-start folyamat elindítva (PID: 16176)
+2026-09-10 21:03:38 [INFO] [DBM TESTER] [2026-09-10 21:03:38] [INFO    ] discord.client: logging in using static token
+2026-09-10 21:03:40 [INFO] [DBM TESTER] [2026-09-10 21:03:40] [INFO    ] discord.gateway: Shard ID None has connected to Gateway (Session ID: 9f08b0ef6083f57620f7dea499ace6ed).
+2026-09-10 21:03:42 [INFO] [DBM TESTER] DBM TESTER v1.0.0 bejelentkezve: DBM | Tester#7338
+2026-09-10 21:03:42 [INFO] [DBM TESTER] Bot vezérlő sikeresen betöltve.
+2026-09-10 21:10:41 [EVENT] Example plugin betöltve.
+2026-09-10 21:10:41 [INFO] A Discord Bot Vezérlőpult sikeresen elindult.
+2026-09-10 21:10:42 [SUCCESS] [DBM TESTER] Auto-start folyamat elindítva (PID: 5688)
+2026-09-10 21:10:43 [INFO] [DBM TESTER] [2026-09-10 21:10:43] [INFO    ] discord.client: logging in using static token
+2026-09-10 21:10:45 [INFO] [DBM TESTER] [2026-09-10 21:10:45] [INFO    ] discord.gateway: Shard ID None has connected to Gateway (Session ID: ca824ad457f025ca86110f6dcb93f301).
+2026-09-10 21:10:47 [INFO] [DBM TESTER] DBM TESTER v1.0.0 bejelentkezve: DBM | Tester#7338
+2026-09-10 21:10:47 [INFO] [DBM TESTER] Bot vezérlő sikeresen betöltve.
+2026-09-11 14:39:01 [EVENT] Example plugin betöltve.
+2026-09-11 14:39:01 [INFO] A Discord Bot Vezérlőpult sikeresen elindult.
+2026-09-11 14:39:03 [SUCCESS] [DBM TESTER] Auto-start folyamat elindítva (PID: 10740)
+2026-09-11 14:39:04 [INFO] [DBM TESTER] [2026-09-11 14:39:04] [INFO    ] discord.client: logging in using static token
+2026-09-11 14:39:06 [INFO] [DBM TESTER] [2026-09-11 14:39:06] [INFO    ] discord.gateway: Shard ID None has connected to Gateway (Session ID: e4ffb71b5d3d83ddb86a620154ec8388).
+2026-09-11 14:39:08 [INFO] [DBM TESTER] DBM TESTER v1.0.0 bejelentkezve: DBM | Tester#7338
+2026-09-11 14:39:08 [INFO] [DBM TESTER] Bot vezérlő sikeresen betöltve.
+2026-09-11 14:40:24 [EVENT] Example plugin betöltve.
+2026-09-11 14:40:24 [INFO] A Discord Bot Vezérlőpult sikeresen elindult.
+2026-09-11 14:40:25 [SUCCESS] [DBM TESTER] Auto-start folyamat elindítva (PID: 19032)
+2026-09-11 14:40:26 [INFO] [DBM TESTER] [2026-09-11 14:40:26] [INFO    ] discord.client: logging in using static token
+2026-09-11 14:40:27 [INFO] [DBM TESTER] [2026-09-11 14:40:27] [INFO    ] discord.gateway: Shard ID None has connected to Gateway (Session ID: 6fd5d9078c0a75ad80d1cfd0dd2caf6c).
+2026-09-11 14:40:29 [INFO] [DBM TESTER] DBM TESTER v1.0.0 bejelentkezve: DBM | Tester#7338
+2026-09-11 14:40:30 [INFO] [DBM TESTER] Bot vezérlő sikeresen betöltve.
+2026-09-11 14:41:34 [EVENT] Example plugin betöltve.
+2026-09-11 14:41:34 [INFO] A Discord Bot Vezérlőpult sikeresen elindult.
+2026-09-11 14:41:36 [SUCCESS] [DBM TESTER] Auto-start folyamat elindítva (PID: 16692)
+2026-09-11 14:41:36 [INFO] [DBM TESTER] [2026-09-11 14:41:36] [INFO    ] discord.client: logging in using static token
+2026-09-11 14:41:38 [INFO] [DBM TESTER] [2026-09-11 14:41:38] [INFO    ] discord.gateway: Shard ID None has connected to Gateway (Session ID: c74bf680a21aaca6991a5badb85345fc).
+2026-09-11 14:41:39 [EVENT] [DBM TESTER] Bot folyamat leállítva.
+2026-09-11 14:42:08 [EVENT] Example plugin betöltve.
+2026-09-11 14:42:08 [INFO] A Discord Bot Vezérlőpult sikeresen elindult.
+2026-09-11 20:21:06 [EVENT] Example plugin betöltve.
+2026-09-11 20:21:06 [INFO] A Discord Bot Vezérlőpult sikeresen elindult.
+2026-09-11 20:21:10 [EVENT] Example plugin betöltve.
+2026-09-11 20:21:10 [INFO] A Discord Bot Vezérlőpult sikeresen elindult.
+2026-09-11 20:21:50 [EVENT] [DBM TESTER] Beállítások manuálisan elmentve.
+2026-09-11 21:03:11 [EVENT] [Main Bot] Beállítások manuálisan elmentve.
+2026-09-11 21:08:16 [SUCCESS] [Main Bot] Bot folyamat elindítva (PID: 6432)
+2026-09-11 21:08:17 [INFO] [Main Bot] [2026-09-11 21:08:17] [INFO    ] discord.client: logging in using static token
+2026-09-11 21:08:19 [INFO] [Main Bot] [2026-09-11 21:08:19] [INFO    ] discord.gateway: Shard ID None has connected to Gateway (Session ID: bc56e8440142db403cc7e7c1725b0d41).
+2026-09-11 21:08:21 [INFO] [Main Bot] Main Bot v5.5.8 bejelentkezve: MainBot#2341
+2026-09-11 21:08:22 [INFO] [Main Bot] Panel integráció sikeresen betöltve.
+2026-09-11 21:08:43 [EVENT] [Main Bot] Bot folyamat leállítva.
+2026-09-11 21:13:46 [SUCCESS] [Main Bot] Bot folyamat elindítva (PID: 2116)
+2026-09-11 21:13:48 [INFO] [Main Bot] [2026-09-11 21:13:48] [INFO    ] discord.client: logging in using static token
+2026-09-11 21:13:50 [INFO] [Main Bot] [2026-09-11 21:13:50] [INFO    ] discord.gateway: Shard ID None has connected to Gateway (Session ID: 221de5522231e2d7a3ac1d2a1a2edaa8).
+2026-09-11 21:13:52 [INFO] [Main Bot] Main Bot v5.5.8 bejelentkezve: MainBot#2341
+2026-09-11 21:13:52 [INFO] [Main Bot] Panel integráció sikeresen betöltve.
+2026-09-11 21:15:05 [EVENT] [Main Bot] Bot folyamat leállítva.
+2026-09-11 21:17:58 [SUCCESS] [Main Bot] Bot folyamat elindítva (PID: 2156)
+2026-09-11 21:17:58 [INFO] [Main Bot] File "C:\Users\Nukre\Desktop\MainBot Panel\bot.py", line 234
+2026-09-11 21:17:58 [INFO] [Main Bot] if __name__ == "__main__"
+2026-09-11 21:17:58 [INFO] [Main Bot] ^
+2026-09-11 21:17:58 [ERROR] [Main Bot] SyntaxError: expected ':'
+2026-09-11 21:17:58 [ERROR] [Main Bot] Bot folyamat váratlanul leállt (kód: 1).
+2026-09-11 21:18:13 [WARNING] Összes bot leállítási parancs kiadva.
+2026-09-11 21:18:14 [SUCCESS] [Main Bot] Bot folyamat elindítva (PID: 18200)
+2026-09-11 21:18:16 [INFO] [Main Bot] [2026-09-11 21:18:16] [INFO    ] discord.client: logging in using static token
+2026-09-11 21:18:18 [INFO] [Main Bot] [2026-09-11 21:18:18] [INFO    ] discord.gateway: Shard ID None has connected to Gateway (Session ID: bab6c30c32641a643dd9ccb117c8e39d).
+2026-09-11 21:18:20 [INFO] [Main Bot] Main Bot v5.5.8 bejelentkezve: MainBot#2341
+2026-09-11 21:18:20 [INFO] [Main Bot] Panel integráció sikeresen betöltve.
+2026-09-11 21:18:31 [EVENT] [Main Bot] Bot folyamat leállítva.
+2026-09-11 21:18:31 [WARNING] Összes bot leállítási parancs kiadva.
+2026-09-11 21:19:51 [SUCCESS] [Main Bot] Bot folyamat elindítva (PID: 13996)
+2026-09-11 21:19:55 [INFO] [Main Bot] [2026-09-11 21:19:55] [INFO    ] discord.client: logging in using static token
+2026-09-11 21:19:57 [INFO] [Main Bot] [2026-09-11 21:19:57] [INFO    ] discord.gateway: Shard ID None has connected to Gateway (Session ID: 50becfb33783e813a5e7600fd4c525e3).
+2026-09-11 21:19:59 [INFO] [Main Bot] Main Bot v5.5.8 bejelentkezve: MainBot#2341
+2026-09-11 21:20:00 [INFO] [Main Bot] Panel integráció sikeresen betöltve.
+2026-09-11 21:20:06 [EVENT] [Main Bot] Bot folyamat leállítva.
+2026-09-11 21:20:28 [EVENT] [Main Bot] Bot újraindítása...
+2026-09-11 21:20:30 [SUCCESS] [Main Bot] Bot folyamat elindítva (PID: 3964)
+2026-09-11 21:20:32 [INFO] [Main Bot] [2026-09-11 21:20:32] [INFO    ] discord.client: logging in using static token
+2026-09-11 21:20:34 [INFO] [Main Bot] [2026-09-11 21:20:34] [INFO    ] discord.gateway: Shard ID None has connected to Gateway (Session ID: 99e47616377e14819cc8ef547d6033df).
+2026-09-11 21:20:36 [INFO] [Main Bot] Main Bot v5.5.8 bejelentkezve: MainBot#2341
+2026-09-11 21:20:36 [INFO] [Main Bot] Panel integráció sikeresen betöltve.
+2026-09-11 21:21:33 [EVENT] [Main Bot] Bot folyamat leállítva.
+2026-09-11 21:21:35 [SUCCESS] [Main Bot] Bot folyamat elindítva (PID: 19816)
+2026-09-11 21:21:36 [INFO] [Main Bot] [2026-09-11 21:21:36] [INFO    ] discord.client: logging in using static token
+2026-09-11 21:21:38 [INFO] [Main Bot] [2026-09-11 21:21:38] [INFO    ] discord.gateway: Shard ID None has connected to Gateway (Session ID: eb530f920ce9ceeb4ca157a1511878eb).
+2026-09-11 21:22:10 [EVENT] [Main Bot] Bot újraindítása...
+2026-09-11 21:22:10 [EVENT] [Main Bot] Bot folyamat leállítva.
+2026-09-11 21:22:12 [SUCCESS] [Main Bot] Bot folyamat elindítva (PID: 2944)
+2026-09-11 21:22:15 [INFO] [Main Bot] [2026-09-11 21:22:15] [INFO    ] discord.client: logging in using static token
+2026-09-11 21:22:17 [INFO] [Main Bot] [2026-09-11 21:22:17] [INFO    ] discord.gateway: Shard ID None has connected to Gateway (Session ID: b7656911c68a3d2112162e5ebe406a3b).
+2026-09-11 21:22:19 [INFO] [Main Bot] Main Bot v5.5.8 bejelentkezve: MainBot#2341
+2026-09-11 21:22:20 [INFO] [Main Bot] Panel integráció sikeresen betöltve.
+2026-09-11 21:23:20 [EVENT] [Main Bot] Bot újraindítása...
+2026-09-11 21:23:20 [EVENT] [Main Bot] Bot folyamat leállítva.
+2026-09-11 21:23:21 [SUCCESS] [Main Bot] Bot folyamat elindítva (PID: 20076)
+2026-09-11 21:23:25 [INFO] [Main Bot] Traceback (most recent call last):
+2026-09-11 21:23:25 [INFO] [Main Bot] File "C:\Users\Nukre\Desktop\MainBot Panel\bot.py", line 25, in <module>
+2026-09-11 21:23:25 [INFO] [Main Bot] bot = commands.Bot(command_prefix=get_prefix, intents=intents)
+2026-09-11 21:23:25 [INFO] [Main Bot] ^^^^^^^^^^
+2026-09-11 21:23:25 [ERROR] [Main Bot] NameError: name 'get_prefix' is not defined
+2026-09-11 21:23:25 [ERROR] [Main Bot] Bot folyamat váratlanul leállt (kód: 1).
+2026-09-11 21:23:43 [EVENT] [Main Bot] Bot újraindítása...
+2026-09-11 21:23:45 [SUCCESS] [Main Bot] Bot folyamat elindítva (PID: 17144)
+2026-09-11 21:23:48 [INFO] [Main Bot] [2026-09-11 21:23:48] [INFO    ] discord.client: logging in using static token
+2026-09-11 21:23:50 [INFO] [Main Bot] [2026-09-11 21:23:50] [INFO    ] discord.gateway: Shard ID None has connected to Gateway (Session ID: 4e7bb7ddb320d1a8b53c333648ac9201).
+2026-09-11 21:23:52 [INFO] [Main Bot] Main Bot v5.5.8 bejelentkezve: MainBot#2341
+2026-09-11 21:23:53 [INFO] [Main Bot] Panel integráció sikeresen betöltve.
+2026-09-11 21:24:00 [ERROR] [Main Bot] [2026-09-11 21:24:00] [ERROR   ] discord.ext.commands.bot: Ignoring exception in command None
+2026-09-11 21:24:00 [ERROR] [Main Bot] discord.ext.commands.errors.CommandNotFound: Command "parancsok" is not found
+2026-09-11 21:24:06 [EVENT] [Main Bot] Bot újraindítása...
+2026-09-11 21:24:06 [EVENT] [Main Bot] Bot folyamat leállítva.
+2026-09-11 21:24:07 [SUCCESS] [Main Bot] Bot folyamat elindítva (PID: 14292)
+2026-09-11 21:24:08 [INFO] [Main Bot] [2026-09-11 21:24:08] [INFO    ] discord.client: logging in using static token
+2026-09-11 21:24:10 [INFO] [Main Bot] [2026-09-11 21:24:10] [INFO    ] discord.gateway: Shard ID None has connected to Gateway (Session ID: 3671312815d5a5df25093415c709fbeb).
+2026-09-11 21:24:12 [INFO] [Main Bot] Main Bot v5.5.8 bejelentkezve: MainBot#2341
+2026-09-11 21:24:53 [INFO] [Main Bot] Panel integráció sikeresen betöltve.
+2026-09-11 21:25:12 [EVENT] [Main Bot] Bot újraindítása...
+2026-09-11 21:25:12 [EVENT] [Main Bot] Bot folyamat leállítva.
+2026-09-11 21:25:13 [SUCCESS] [Main Bot] Bot folyamat elindítva (PID: 18100)
+2026-09-11 21:25:16 [INFO] [Main Bot] [2026-09-11 21:25:16] [INFO    ] discord.client: logging in using static token
+2026-09-11 21:25:17 [INFO] [Main Bot] --- Bot indítása (setup_hook) ---
+2026-09-11 21:25:17 [INFO] [Main Bot] [OK] SQLite adatbázis inicializálva: C:\Users\Nukre\Desktop\MainBot Panel\data\server_data.db
+2026-09-11 21:25:17 [INFO] [Main Bot] [STARTUP] Adatbázis inicializálva.
+2026-09-11 21:25:18 [ERROR] [Main Bot] [STARTUP ERROR] Hiba a Panel Helper inicializálásakor: No module named 'panel_helper'
+2026-09-11 21:25:18 [INFO] [Main Bot] ------------------------------------------------------------
+2026-09-11 21:25:18 [INFO] [Main Bot] cogs betöltése
+2026-09-11 21:25:18 [INFO] [Main Bot] ------------------------------------------------------------
+2026-09-11 21:25:18 [INFO] [Main Bot] + Betöltve: cogs.afk_loop
+2026-09-11 21:25:18 [EVENT] [Main Bot] [INFO] AuditLogWatcher cog aszinkron módon betöltve.
+2026-09-11 21:25:18 [INFO] [Main Bot] + Betöltve: cogs.audit_log
+2026-09-11 21:25:18 [INFO] [Main Bot] + Betöltve: cogs.automod
+2026-09-11 21:25:18 [INFO] [Main Bot] [OK] cogs.dev_ticket (Fejlesztői Ticket Rendszer) betöltve.
+2026-09-11 21:25:18 [INFO] [Main Bot] + Betöltve: cogs.dev_ticket
+2026-09-11 21:25:18 [INFO] [Main Bot] [STARTUP] cogs.rrole_logic (Reakció Rangok) betöltve.
+2026-09-11 21:25:18 [INFO] [Main Bot] + Betöltve: cogs.rrole_logic
+2026-09-11 21:25:18 [ERROR] [Main Bot] [ERROR] Hiba a(z) cogs.rss_logika betöltésekor: Extension 'cogs.rss_logika' raised an error: ModuleNotFoundError: No module named 'asynco'
+2026-09-11 21:25:18 [INFO] [Main Bot] [OK] Verzió betöltve a version.py-ból: 5.5.8
+2026-09-11 21:25:18 [INFO] [Main Bot] [OK] cogs.settings (Globális Konfig) betöltve.
+2026-09-11 21:25:18 [INFO] [Main Bot] [OK] cogs.szolgaltatasok (Háttérszolgáltatások) betöltve.
+2026-09-11 21:25:18 [INFO] [Main Bot] + Betöltve: cogs.szolgaltatasok
+2026-09-11 21:25:18 [ERROR] [Main Bot] [ERROR] Hiba a(z) cogs.status_rotator betöltésekor: Extension 'cogs.status_rotator' could not be loaded or found.
+2026-09-11 21:25:18 [ERROR] [Main Bot] [ERROR] Hiba a(z) cogs.ertekeles betöltésekor: Extension 'cogs.ertekeles' raised an error: FileNotFoundError: [WinError 3] A rendszer nem találja a megadott elérési utat: '...\\data'
+2026-09-11 21:25:18 [INFO] [Main Bot] + Betöltve: cogs.music
+2026-09-11 21:25:18 [INFO] [Main Bot] LOBBY MANAGER BETÖLTVE.
+2026-09-11 21:25:18 [INFO] [Main Bot] + Betöltve: cogs.lobby_manager
+2026-09-11 21:25:18 [INFO] [Main Bot] + Betöltve: cogs.shop
+2026-09-11 21:25:18 [INFO] [Main Bot] ------------------------------------------------------------
+2026-09-11 21:25:18 [INFO] [Main Bot] cogs betöltve
+2026-09-11 21:25:18 [INFO] [Main Bot] ------------------------------------------------------------
+2026-09-11 21:25:18 [INFO] [Main Bot] ------------------------------------------------------------
+2026-09-11 21:25:18 [INFO] [Main Bot] parancsok betöltése....
+2026-09-11 21:25:18 [INFO] [Main Bot] ------------------------------------------------------------
+2026-09-11 21:25:18 [INFO] [Main Bot] [STARTUP] Commands betöltése...
+2026-09-11 21:25:18 [INFO] [Main Bot] [OK] commands.parancsok betöltve.
+2026-09-11 21:25:18 [INFO] [Main Bot] + Betöltve: commands.basic.cmd
+2026-09-11 21:25:18 [INFO] [Main Bot] + Betöltve: commands.basic.altalanos
+2026-09-11 21:25:18 [INFO] [Main Bot] [OK] commands.automata (RSS és Automata Parancsok) betöltve.
+2026-09-11 21:25:18 [INFO] [Main Bot] + Betöltve: commands.basic.automata
+2026-09-11 21:25:18 [INFO] [Main Bot] [OK] commands.development (Fejlesztői Parancsok) betöltve.
+2026-09-11 21:25:18 [INFO] [Main Bot] + Betöltve: commands.basic.dev
+2026-09-11 21:25:18 [INFO] [Main Bot] [OK] commands.moderacio betöltve.
+2026-09-11 21:25:18 [INFO] [Main Bot] + Betöltve: commands.basic.mod
+2026-09-11 21:25:19 [ERROR] [Main Bot] [ERROR] Hiba a(z) commands.basic.ssettings betöltésekor: Extension 'commands.basic.ssettings' could not be loaded or found.
+2026-09-11 21:25:19 [INFO] [Main Bot] [OK] commands.tulajdonos (Tulajdonosi Parancsok: Restart, Broadcast, Tesztmod) betöltve.
+2026-09-11 21:25:19 [INFO] [Main Bot] + Betöltve: commands.basic.tulaj
+2026-09-11 21:25:19 [INFO] [Main Bot] + Betöltve: commands.basic.music
+2026-09-11 21:25:19 [INFO] [Main Bot] [OK] commands.voicech (Temp Channel) betöltve.
+2026-09-11 21:25:19 [INFO] [Main Bot] + Betöltve: commands.basic.tempvoice
+2026-09-11 21:25:19 [INFO] [Main Bot] [OK] commands.boxes |    szerencsedobozok betöltve.
+2026-09-11 21:25:19 [INFO] [Main Bot] + Betöltve: commands.economy.boxes
+2026-09-11 21:25:19 [INFO] [Main Bot] [OK] commands.economy.economy |  Economy fő fájl betöltve.
+2026-09-11 21:25:19 [INFO] [Main Bot] + Betöltve: commands.economy.economy
+2026-09-11 21:25:19 [INFO] [Main Bot] [OK] commands.economy.shop | Economy shop betöltve.
+2026-09-11 21:25:19 [INFO] [Main Bot] + Betöltve: commands.economy.shop
+2026-09-11 21:25:19 [ERROR] [Main Bot] [ERROR] Hiba a(z) commands.economy.challenges betöltésekor: Extension 'commands.economy.challenges' could not be loaded or found.
+2026-09-11 21:25:19 [INFO] [Main Bot] [OK] commands.economy.bank | Economy Bankrendszer betöltve.
+2026-09-11 21:25:19 [INFO] [Main Bot] + Betöltve: commands.economy.bank
+2026-09-11 21:25:19 [INFO] [Main Bot] [OK] commands.economy.core | Economy Core betöltve
+2026-09-11 21:25:19 [INFO] [Main Bot] + Betöltve: commands.economy.core
+2026-09-11 21:25:19 [INFO] [Main Bot] [OK] commands.economy.jobs |     Economy Munkák betöltve.
+2026-09-11 21:25:19 [INFO] [Main Bot] + Betöltve: commands.economy.jobs
+2026-09-11 21:25:19 [INFO] [Main Bot] [OK] commands.economy.quests |   Kihivások betöltve.
+2026-09-11 21:25:19 [INFO] [Main Bot] + Betöltve: commands.economy.quests
+2026-09-11 21:25:19 [INFO] [Main Bot] [OK] commands.economy.stocks | Economy Részvények betöltve.
+2026-09-11 21:25:19 [INFO] [Main Bot] + Betöltve: commands.economy.stocks
+2026-09-11 21:25:19 [INFO] [Main Bot] [OK] commands.economy.companies |    Vállalati parancsok betöltve.
+2026-09-11 21:25:19 [INFO] [Main Bot] + Betöltve: commands.economy.companies
+2026-09-11 21:25:19 [INFO] [Main Bot] [OK] commands.games.lobby |  Lobby rendszer betöltve.
+2026-09-11 21:25:19 [INFO] [Main Bot] + Betöltve: commands.games.lobby
+2026-09-11 21:25:19 [INFO] [Main Bot] [OK] commands.games.hangman (Elixír & Küldetés Integrációval) betöltve.
+2026-09-11 21:25:19 [INFO] [Main Bot] + Betöltve: commands.games.hangman
+2026-09-11 21:25:19 [INFO] [Main Bot] [OK] commands.games.amoba |  Amőba betöltve.
+2026-09-11 21:25:19 [INFO] [Main Bot] + Betöltve: commands.games.amoba
+2026-09-11 21:25:19 [INFO] [Main Bot] [OK] commands.games.blackjack |  BlackJack betöltve.
+2026-09-11 21:25:19 [INFO] [Main Bot] + Betöltve: commands.games.blackjack
+2026-09-11 21:25:19 [INFO] [Main Bot] [OK] commands.games.torpedo | Torpedó betöltve.
+2026-09-11 21:25:19 [INFO] [Main Bot] + Betöltve: commands.games.torpedo
+2026-09-11 21:25:19 [INFO] [Main Bot] [OK] commands.games.wof | Wheel Of Furtune betöltve.
+2026-09-11 21:25:19 [INFO] [Main Bot] + Betöltve: commands.games.wof
+2026-09-11 21:25:19 [INFO] [Main Bot] [OK] commands.games.quiz | Quiz játék betöltve.
+2026-09-11 21:25:19 [INFO] [Main Bot] + Betöltve: commands.games.quiz
+2026-09-11 21:25:19 [INFO] [Main Bot] [OK] commands.games.hilo |   Kissebb nagyobb betöltve.
+2026-09-11 21:25:19 [INFO] [Main Bot] + Betöltve: commands.games.hilo
+2026-09-11 21:25:19 [INFO] [Main Bot] [OK] commands.games.lotto.admin (és main) betöltve.
+2026-09-11 21:25:19 [INFO] [Main Bot] + Betöltve: commands.games.lotto.admin
+2026-09-11 21:25:19 [INFO] [Main Bot] [OK] commands.games.rulett |   KerékRulett betöltve.
+2026-09-11 21:25:19 [INFO] [Main Bot] + Betöltve: commands.games.rulett
+2026-09-11 21:25:19 [INFO] [Main Bot] [OK] commands.games.slot |   Félkarú Rabló betöltve.
+2026-09-11 21:25:19 [INFO] [Main Bot] + Betöltve: commands.games.slot
+2026-09-11 21:25:19 [INFO] [Main Bot] [OK] commands.games.coinflip |   CoinFlip betöltve.
+2026-09-11 21:25:19 [INFO] [Main Bot] + Betöltve: commands.games.coinflip
+2026-09-11 21:25:19 [INFO] [Main Bot] [OK] commands.games.race |   Lóverseny betöltve.
+2026-09-11 21:25:19 [INFO] [Main Bot] + Betöltve: commands.games.race
+2026-09-11 21:25:19 [INFO] [Main Bot] [OK] commands.games.akna |   akna mező betöltve.
+2026-09-11 21:25:19 [INFO] [Main Bot] + Betöltve: commands.games.akna
+2026-09-11 21:25:19 [INFO] [Main Bot] [OK] commands.games.orosz |  OroszRulett betöltve.
+2026-09-11 21:25:19 [INFO] [Main Bot] + Betöltve: commands.games.orosz
+2026-09-11 21:25:19 [INFO] [Main Bot] [OK] commands.games.kpo |    Kő Papir Ollo betöltve.
+2026-09-11 21:25:19 [INFO] [Main Bot] + Betöltve: commands.games.kpo
+2026-09-11 21:25:19 [INFO] [Main Bot] [OK] commands.games.uno |    Unó betöltve.
+2026-09-11 21:25:19 [INFO] [Main Bot] + Betöltve: commands.games.uno
+2026-09-11 21:25:19 [INFO] [Main Bot] [OK] commands.games.snake | Snake betöltve.
+2026-09-11 21:25:19 [INFO] [Main Bot] + Betöltve: commands.games.snake
+2026-09-11 21:25:19 [INFO] [Main Bot] [OK] commands.games.mmind |  MasterMind betöltve.
+2026-09-11 21:25:19 [INFO] [Main Bot] + Betöltve: commands.games.mmind
+2026-09-11 21:25:19 [INFO] [Main Bot] [OK] commands.games.crash |  Repülő crash betöltve.
+2026-09-11 21:25:19 [INFO] [Main Bot] + Betöltve: commands.games.crash
+2026-09-11 21:25:19 [INFO] [Main Bot] [OK commands.games.kockapoker |  KockaPóker betöltve.]
+2026-09-11 21:25:19 [INFO] [Main Bot] + Betöltve: commands.games.kockapoker
+2026-09-11 21:25:19 [ERROR] [Main Bot] [ERROR] Hiba a(z) commands.games.liars betöltésekor: Extension 'commands.games.liars' could not be loaded or found.
+2026-09-11 21:25:19 [EVENT] [Main Bot] [INFO] Konfigurációs fájl nem létezik, új jön létre.
+2026-09-11 21:25:19 [INFO] [Main Bot] + Betöltve: commands.games.alszik.commands
+2026-09-11 21:25:19 [INFO] [Main Bot] + Betöltve: commands.games.alszik.actions
+2026-09-11 21:25:19 [ERROR] [Main Bot] [ERROR] Hiba a(z) commands.games.alszik.gameinfo betöltésekor: Extension 'commands.games.alszik.gameinfo' could not be loaded or found.
+2026-09-11 21:25:19 [INFO] [Main Bot] [OK] commands.economy.castles.castles (Teljes Várrendszer) betöltve.
+2026-09-11 21:25:19 [INFO] [Main Bot] + Betöltve: commands.economy.castles.castles
+2026-09-11 21:25:19 [INFO] [Main Bot] + Betöltve: bot_vezerlo
+2026-09-11 21:25:19 [INFO] [Main Bot] ------------------------------------------------------------
+2026-09-11 21:25:19 [INFO] [Main Bot] parancsok betöltve
+2026-09-11 21:25:19 [INFO] [Main Bot] ------------------------------------------------------------
+2026-09-11 21:25:19 [INFO] [Main Bot] [STARTUP] Perzisztens Ticket nyitó View regisztrálva.
+2026-09-11 21:25:19 [INFO] [Main Bot] [Lotto] Várok a bot elindulására az időellenőrző loophoz...
+2026-09-11 21:25:19 [INFO] [Main Bot] [2026-09-11 21:25:19] [INFO    ] discord.gateway: Shard ID None has connected to Gateway (Session ID: e220a9f78ed49fb4531545c6568daf1f).
+2026-09-11 21:25:21 [INFO] [Main Bot] ------ Kész vagyok! Bejelentkezve: MainBot#2341 (ID: 1534156950512734409) ------
+2026-09-11 21:25:21 [INFO] [Main Bot] Aktív szerverek száma: 2
+2026-09-11 21:25:21 [EVENT] [Main Bot] [DEBUG] Mentési útvonal: C:\Users\Nukre\Desktop\MainBot Panel\bot_stats.json
+2026-09-11 21:25:21 [EVENT] [Main Bot] [DEBUG] Aktuális guild szám: 2, User szám: 119
+2026-09-11 21:25:21 [EVENT] [Main Bot] [DEBUG] bot_stats.json sikeresen kiírva!
+2026-09-11 21:25:21 [ERROR] [Main Bot] [ERROR] Panel helper hiba: No module named 'panel_helper'
+2026-09-11 21:25:21 [INFO] [Main Bot] [OK] cogs.shop (Pajzsokkal) betöltve.
+2026-09-11 21:25:24 [INFO] [Main Bot] [LottoAdmin] Slash parancsok (/lottoszam, /lotto_reset) szinkronizálva.
+2026-09-11 21:30:38 [EVENT] [Main Bot] Bot újraindítása...
+2026-09-11 21:30:38 [EVENT] [Main Bot] Bot folyamat leállítva.
+2026-09-11 21:30:40 [SUCCESS] [Main Bot] Bot folyamat elindítva (PID: 7476)
+2026-09-11 21:30:43 [INFO] [Main Bot] [2026-09-11 21:30:43] [INFO    ] discord.client: logging in using static token
+2026-09-11 21:30:44 [INFO] [Main Bot] --- Bot indítása (setup_hook) ---
+2026-09-11 21:30:44 [INFO] [Main Bot] [OK] SQLite adatbázis inicializálva: C:\Users\Nukre\Desktop\MainBot Panel\data\server_data.db
+2026-09-11 21:30:44 [INFO] [Main Bot] [STARTUP] Adatbázis inicializálva.
+2026-09-11 21:30:44 [INFO] [Main Bot] [STARTUP] Panel Helper inicializálva.
+2026-09-11 21:30:44 [INFO] [Main Bot] ------------------------------------------------------------
+2026-09-11 21:30:44 [INFO] [Main Bot] cogs betöltése
+2026-09-11 21:30:44 [INFO] [Main Bot] ------------------------------------------------------------
+2026-09-11 21:30:44 [INFO] [Main Bot] + Betöltve: cogs.afk_loop
+2026-09-11 21:30:44 [EVENT] [Main Bot] [INFO] AuditLogWatcher cog aszinkron módon betöltve.
+2026-09-11 21:30:44 [INFO] [Main Bot] + Betöltve: cogs.audit_log
+2026-09-11 21:30:44 [INFO] [Main Bot] + Betöltve: cogs.automod
+2026-09-11 21:30:44 [INFO] [Main Bot] [OK] cogs.dev_ticket (Fejlesztői Ticket Rendszer) betöltve.
+2026-09-11 21:30:44 [INFO] [Main Bot] + Betöltve: cogs.dev_ticket
+2026-09-11 21:30:44 [INFO] [Main Bot] [STARTUP] cogs.rrole_logic (Reakció Rangok) betöltve.
+2026-09-11 21:30:44 [INFO] [Main Bot] + Betöltve: cogs.rrole_logic
+2026-09-11 21:30:44 [ERROR] [Main Bot] [ERROR] Hiba a(z) cogs.rss_logika betöltésekor: Extension 'cogs.rss_logika' raised an error: ModuleNotFoundError: No module named 'asynco'
+2026-09-11 21:30:44 [INFO] [Main Bot] [OK] Verzió betöltve a version.py-ból: 5.5.8
+2026-09-11 21:30:44 [INFO] [Main Bot] [OK] cogs.settings (Globális Konfig) betöltve.
+2026-09-11 21:30:44 [INFO] [Main Bot] [OK] cogs.szolgaltatasok (Háttérszolgáltatások) betöltve.
+2026-09-11 21:30:44 [INFO] [Main Bot] + Betöltve: cogs.szolgaltatasok
+2026-09-11 21:30:44 [INFO] [Main Bot] [STARTUP] cogs.ertekeles (JSON Értékelő Rendszer) betöltve.
+2026-09-11 21:30:44 [INFO] [Main Bot] [OK] cogs.ertekeles (JSON Értékelő Rendszer) betöltve.
+2026-09-11 21:30:44 [INFO] [Main Bot] + Betöltve: cogs.ertekeles
+2026-09-11 21:30:44 [INFO] [Main Bot] + Betöltve: cogs.music
+2026-09-11 21:30:44 [INFO] [Main Bot] LOBBY MANAGER BETÖLTVE.
+2026-09-11 21:30:44 [INFO] [Main Bot] + Betöltve: cogs.lobby_manager
+2026-09-11 21:30:44 [INFO] [Main Bot] + Betöltve: cogs.shop
+2026-09-11 21:30:44 [INFO] [Main Bot] ------------------------------------------------------------
+2026-09-11 21:30:44 [INFO] [Main Bot] cogs betöltve
+2026-09-11 21:30:44 [INFO] [Main Bot] ------------------------------------------------------------
+2026-09-11 21:30:44 [INFO] [Main Bot] ------------------------------------------------------------
+2026-09-11 21:30:44 [INFO] [Main Bot] parancsok betöltése....
+2026-09-11 21:30:44 [INFO] [Main Bot] ------------------------------------------------------------
+2026-09-11 21:30:44 [INFO] [Main Bot] [STARTUP] Commands betöltése...
+2026-09-11 21:30:44 [INFO] [Main Bot] [OK] commands.parancsok betöltve.
+2026-09-11 21:30:44 [INFO] [Main Bot] + Betöltve: commands.basic.cmd
+2026-09-11 21:30:44 [INFO] [Main Bot] + Betöltve: commands.basic.altalanos
+2026-09-11 21:30:44 [INFO] [Main Bot] [OK] commands.automata (RSS és Automata Parancsok) betöltve.
+2026-09-11 21:30:44 [INFO] [Main Bot] + Betöltve: commands.basic.automata
+2026-09-11 21:30:44 [INFO] [Main Bot] [OK] commands.development (Fejlesztői Parancsok) betöltve.
+2026-09-11 21:30:44 [INFO] [Main Bot] + Betöltve: commands.basic.dev
+2026-09-11 21:30:44 [INFO] [Main Bot] [OK] commands.moderacio betöltve.
+2026-09-11 21:30:44 [INFO] [Main Bot] + Betöltve: commands.basic.mod
+2026-09-11 21:30:44 [INFO] [Main Bot] [OK] commands.szerverbeallitasok (Szerverbeállítások) betöltve.
+2026-09-11 21:30:44 [INFO] [Main Bot] + Betöltve: commands.basic.ssettings
+2026-09-11 21:30:44 [INFO] [Main Bot] [OK] commands.tulajdonos (Tulajdonosi Parancsok: Restart, Broadcast, Tesztmod) betöltve.
+2026-09-11 21:30:44 [INFO] [Main Bot] + Betöltve: commands.basic.tulaj
+2026-09-11 21:30:44 [INFO] [Main Bot] + Betöltve: commands.basic.music
+2026-09-11 21:30:44 [INFO] [Main Bot] [OK] commands.voicech (Temp Channel) betöltve.
+2026-09-11 21:30:44 [INFO] [Main Bot] + Betöltve: commands.basic.tempvoice
+2026-09-11 21:30:44 [INFO] [Main Bot] [OK] commands.boxes |    szerencsedobozok betöltve.
+2026-09-11 21:30:44 [INFO] [Main Bot] + Betöltve: commands.economy.boxes
+2026-09-11 21:30:44 [INFO] [Main Bot] [OK] commands.economy.economy |  Economy fő fájl betöltve.
+2026-09-11 21:30:44 [INFO] [Main Bot] + Betöltve: commands.economy.economy
+2026-09-11 21:30:44 [INFO] [Main Bot] [OK] commands.economy.shop | Economy shop betöltve.
+2026-09-11 21:30:44 [INFO] [Main Bot] + Betöltve: commands.economy.shop
+2026-09-11 21:30:44 [INFO] [Main Bot] [OK] commands.challenges (Mérföldkő & Küldetés rendszer) betöltve.
+2026-09-11 21:30:44 [INFO] [Main Bot] + Betöltve: commands.economy.challenges
+2026-09-11 21:30:44 [INFO] [Main Bot] [OK] commands.economy.bank | Economy Bankrendszer betöltve.
+2026-09-11 21:30:44 [INFO] [Main Bot] + Betöltve: commands.economy.bank
+2026-09-11 21:30:44 [INFO] [Main Bot] [OK] commands.economy.core | Economy Core betöltve
+2026-09-11 21:30:44 [INFO] [Main Bot] + Betöltve: commands.economy.core
+2026-09-11 21:30:44 [INFO] [Main Bot] [OK] commands.economy.jobs |     Economy Munkák betöltve.
+2026-09-11 21:30:44 [INFO] [Main Bot] + Betöltve: commands.economy.jobs
+2026-09-11 21:30:44 [INFO] [Main Bot] [OK] commands.economy.quests |   Kihivások betöltve.
+2026-09-11 21:30:44 [INFO] [Main Bot] + Betöltve: commands.economy.quests
+2026-09-11 21:30:44 [INFO] [Main Bot] [OK] commands.economy.stocks | Economy Részvények betöltve.
+2026-09-11 21:30:44 [INFO] [Main Bot] + Betöltve: commands.economy.stocks
+2026-09-11 21:30:44 [INFO] [Main Bot] [OK] commands.economy.companies |    Vállalati parancsok betöltve.
+2026-09-11 21:30:44 [INFO] [Main Bot] + Betöltve: commands.economy.companies
+2026-09-11 21:30:44 [INFO] [Main Bot] [OK] commands.games.lobby |  Lobby rendszer betöltve.
+2026-09-11 21:30:44 [INFO] [Main Bot] + Betöltve: commands.games.lobby
+2026-09-11 21:30:44 [INFO] [Main Bot] [OK] commands.games.hangman (Elixír & Küldetés Integrációval) betöltve.
+2026-09-11 21:30:44 [INFO] [Main Bot] + Betöltve: commands.games.hangman
+2026-09-11 21:30:44 [INFO] [Main Bot] [OK] commands.games.amoba |  Amőba betöltve.
+2026-09-11 21:30:44 [INFO] [Main Bot] + Betöltve: commands.games.amoba
+2026-09-11 21:30:44 [INFO] [Main Bot] [OK] commands.games.blackjack |  BlackJack betöltve.
+2026-09-11 21:30:44 [INFO] [Main Bot] + Betöltve: commands.games.blackjack
+2026-09-11 21:30:44 [INFO] [Main Bot] [OK] commands.games.torpedo | Torpedó betöltve.
+2026-09-11 21:30:44 [INFO] [Main Bot] + Betöltve: commands.games.torpedo
+2026-09-11 21:30:44 [INFO] [Main Bot] [OK] commands.games.wof | Wheel Of Furtune betöltve.
+2026-09-11 21:30:44 [INFO] [Main Bot] + Betöltve: commands.games.wof
+2026-09-11 21:30:44 [INFO] [Main Bot] [OK] commands.games.quiz | Quiz játék betöltve.
+2026-09-11 21:30:44 [INFO] [Main Bot] + Betöltve: commands.games.quiz
+2026-09-11 21:30:44 [INFO] [Main Bot] [OK] commands.games.hilo |   Kissebb nagyobb betöltve.
+2026-09-11 21:30:44 [INFO] [Main Bot] + Betöltve: commands.games.hilo
+2026-09-11 21:30:44 [INFO] [Main Bot] [OK] commands.games.lotto.admin (és main) betöltve.
+2026-09-11 21:30:44 [INFO] [Main Bot] + Betöltve: commands.games.lotto.admin
+2026-09-11 21:30:44 [INFO] [Main Bot] [OK] commands.games.rulett |   KerékRulett betöltve.
+2026-09-11 21:30:44 [INFO] [Main Bot] + Betöltve: commands.games.rulett
+2026-09-11 21:30:44 [INFO] [Main Bot] [OK] commands.games.slot |   Félkarú Rabló betöltve.
+2026-09-11 21:30:44 [INFO] [Main Bot] + Betöltve: commands.games.slot
+2026-09-11 21:30:44 [INFO] [Main Bot] [OK] commands.games.coinflip |   CoinFlip betöltve.
+2026-09-11 21:30:44 [INFO] [Main Bot] + Betöltve: commands.games.coinflip
+2026-09-11 21:30:44 [INFO] [Main Bot] [OK] commands.games.race |   Lóverseny betöltve.
+2026-09-11 21:30:44 [INFO] [Main Bot] + Betöltve: commands.games.race
+2026-09-11 21:30:44 [INFO] [Main Bot] [OK] commands.games.akna |   akna mező betöltve.
+2026-09-11 21:30:44 [INFO] [Main Bot] + Betöltve: commands.games.akna
+2026-09-11 21:30:44 [INFO] [Main Bot] [OK] commands.games.orosz |  OroszRulett betöltve.
+2026-09-11 21:30:44 [INFO] [Main Bot] + Betöltve: commands.games.orosz
+2026-09-11 21:30:44 [INFO] [Main Bot] [OK] commands.games.kpo |    Kő Papir Ollo betöltve.
+2026-09-11 21:30:44 [INFO] [Main Bot] + Betöltve: commands.games.kpo
+2026-09-11 21:30:44 [INFO] [Main Bot] [OK] commands.games.uno |    Unó betöltve.
+2026-09-11 21:30:44 [INFO] [Main Bot] + Betöltve: commands.games.uno
+2026-09-11 21:30:44 [INFO] [Main Bot] [OK] commands.games.snake | Snake betöltve.
+2026-09-11 21:30:44 [INFO] [Main Bot] + Betöltve: commands.games.snake
+2026-09-11 21:30:44 [INFO] [Main Bot] [OK] commands.games.mmind |  MasterMind betöltve.
+2026-09-11 21:30:44 [INFO] [Main Bot] + Betöltve: commands.games.mmind
+2026-09-11 21:30:44 [INFO] [Main Bot] [OK] commands.games.crash |  Repülő crash betöltve.
+2026-09-11 21:30:44 [INFO] [Main Bot] + Betöltve: commands.games.crash
+2026-09-11 21:30:44 [INFO] [Main Bot] [OK commands.games.kockapoker |  KockaPóker betöltve.]
+2026-09-11 21:30:44 [INFO] [Main Bot] + Betöltve: commands.games.kockapoker
+2026-09-11 21:30:44 [INFO] [Main Bot] [ok] commands.games.liar |   Liar's Bar játék betöltve.
+2026-09-11 21:30:44 [INFO] [Main Bot] + Betöltve: commands.games.liar
+2026-09-11 21:30:44 [EVENT] [Main Bot] [INFO] Konfigurációs fájl nem létezik, új jön létre.
+2026-09-11 21:30:44 [INFO] [Main Bot] + Betöltve: commands.games.alszik.commands
+2026-09-11 21:30:44 [INFO] [Main Bot] + Betöltve: commands.games.alszik.actions
+2026-09-11 21:30:45 [ERROR] [Main Bot] [ERROR] Hiba a(z) commands.games.alszik.gameinfo betöltésekor: Extension 'commands.games.alszik.gameinfo' has no 'setup' function.
+2026-09-11 21:30:45 [INFO] [Main Bot] [OK] commands.economy.castles.castles (Teljes Várrendszer) betöltve.
+2026-09-11 21:30:45 [INFO] [Main Bot] + Betöltve: commands.economy.castles.castles
+2026-09-11 21:30:45 [INFO] [Main Bot] + Betöltve: bot_vezerlo
+2026-09-11 21:30:45 [INFO] [Main Bot] ------------------------------------------------------------
+2026-09-11 21:30:45 [INFO] [Main Bot] parancsok betöltve
+2026-09-11 21:30:45 [INFO] [Main Bot] ------------------------------------------------------------
+2026-09-11 21:30:45 [INFO] [Main Bot] [STARTUP] Perzisztens Ticket nyitó View regisztrálva.
+2026-09-11 21:30:45 [INFO] [Main Bot] [Lotto] Várok a bot elindulására az időellenőrző loophoz...
+2026-09-11 21:30:45 [INFO] [Main Bot] [2026-09-11 21:30:45] [INFO    ] discord.gateway: Shard ID None has connected to Gateway (Session ID: 8daab476c4aecae92dd6c29c440f659d).
+2026-09-11 21:30:47 [INFO] [Main Bot] ------ Kész vagyok! Bejelentkezve: MainBot#2341 (ID: 1534156950512734409) ------
+2026-09-11 21:30:47 [INFO] [Main Bot] Aktív szerverek száma: 2
+2026-09-11 21:30:47 [EVENT] [Main Bot] [DEBUG] Mentési útvonal: C:\Users\Nukre\Desktop\MainBot Panel\bot_stats.json
+2026-09-11 21:30:47 [EVENT] [Main Bot] [DEBUG] Aktuális guild szám: 2, User szám: 119
+2026-09-11 21:30:47 [EVENT] [Main Bot] [DEBUG] bot_stats.json sikeresen kiírva!
+2026-09-11 21:30:47 [INFO] [Main Bot] [PANEL HELPER] 2 szerver adatai szinkronizálva!
+2026-09-11 21:30:47 [INFO] [Main Bot] [OK] cogs.shop (Pajzsokkal) betöltve.
+2026-09-11 21:30:49 [INFO] [Main Bot] [LottoAdmin] Slash parancsok (/lottoszam, /lotto_reset) szinkronizálva.
+2026-09-11 21:32:02 [EVENT] [Main Bot] Bot újraindítása...
+2026-09-11 21:32:02 [EVENT] [Main Bot] Bot folyamat leállítva.
+2026-09-11 21:32:04 [SUCCESS] [Main Bot] Bot folyamat elindítva (PID: 15956)
+2026-09-11 21:32:07 [INFO] [Main Bot] [2026-09-11 21:32:07] [INFO    ] discord.client: logging in using static token
+2026-09-11 21:32:08 [INFO] [Main Bot] --- Bot indítása (setup_hook) ---
+2026-09-11 21:32:08 [INFO] [Main Bot] [OK] SQLite adatbázis inicializálva: C:\Users\Nukre\Desktop\MainBot Panel\data\server_data.db
+2026-09-11 21:32:08 [INFO] [Main Bot] [STARTUP] Adatbázis inicializálva.
+2026-09-11 21:32:08 [INFO] [Main Bot] [STARTUP] Panel Helper inicializálva.
+2026-09-11 21:32:08 [INFO] [Main Bot] ------------------------------------------------------------
+2026-09-11 21:32:08 [INFO] [Main Bot] cogs betöltése
+2026-09-11 21:32:08 [INFO] [Main Bot] ------------------------------------------------------------
+2026-09-11 21:32:08 [INFO] [Main Bot] + Betöltve: cogs.afk_loop
+2026-09-11 21:32:08 [EVENT] [Main Bot] [INFO] AuditLogWatcher cog aszinkron módon betöltve.
+2026-09-11 21:32:08 [INFO] [Main Bot] + Betöltve: cogs.audit_log
+2026-09-11 21:32:08 [INFO] [Main Bot] + Betöltve: cogs.automod
+2026-09-11 21:32:08 [INFO] [Main Bot] [OK] cogs.dev_ticket (Fejlesztői Ticket Rendszer) betöltve.
+2026-09-11 21:32:08 [INFO] [Main Bot] + Betöltve: cogs.dev_ticket
+2026-09-11 21:32:08 [INFO] [Main Bot] [STARTUP] cogs.rrole_logic (Reakció Rangok) betöltve.
+2026-09-11 21:32:08 [INFO] [Main Bot] + Betöltve: cogs.rrole_logic
+2026-09-11 21:32:08 [INFO] [Main Bot] [OK] Verzió betöltve a version.py-ból: 5.5.8
+2026-09-11 21:32:08 [INFO] [Main Bot] [OK] cogs.settings (Globális Konfig) betöltve.
+2026-09-11 21:32:08 [INFO] [Main Bot] [OK] cogs.rss_logika (Háttérlogika) betöltve.
+2026-09-11 21:32:08 [INFO] [Main Bot] + Betöltve: cogs.rss_logika
+2026-09-11 21:32:08 [INFO] [Main Bot] [OK] cogs.szolgaltatasok (Háttérszolgáltatások) betöltve.
+2026-09-11 21:32:08 [INFO] [Main Bot] + Betöltve: cogs.szolgaltatasok
+2026-09-11 21:32:08 [INFO] [Main Bot] [STARTUP] cogs.ertekeles (JSON Értékelő Rendszer) betöltve.
+2026-09-11 21:32:08 [INFO] [Main Bot] [OK] cogs.ertekeles (JSON Értékelő Rendszer) betöltve.
+2026-09-11 21:32:08 [INFO] [Main Bot] + Betöltve: cogs.ertekeles
+2026-09-11 21:32:08 [INFO] [Main Bot] + Betöltve: cogs.music
+2026-09-11 21:32:09 [INFO] [Main Bot] LOBBY MANAGER BETÖLTVE.
+2026-09-11 21:32:09 [INFO] [Main Bot] + Betöltve: cogs.lobby_manager
+2026-09-11 21:32:09 [INFO] [Main Bot] + Betöltve: cogs.shop
+2026-09-11 21:32:09 [INFO] [Main Bot] ------------------------------------------------------------
+2026-09-11 21:32:09 [INFO] [Main Bot] cogs betöltve
+2026-09-11 21:32:09 [INFO] [Main Bot] ------------------------------------------------------------
+2026-09-11 21:32:09 [INFO] [Main Bot] ------------------------------------------------------------
+2026-09-11 21:32:09 [INFO] [Main Bot] parancsok betöltése....
+2026-09-11 21:32:09 [INFO] [Main Bot] ------------------------------------------------------------
+2026-09-11 21:32:09 [INFO] [Main Bot] [STARTUP] Commands betöltése...
+2026-09-11 21:32:09 [INFO] [Main Bot] [OK] commands.parancsok betöltve.
+2026-09-11 21:32:09 [INFO] [Main Bot] + Betöltve: commands.basic.cmd
+2026-09-11 21:32:09 [INFO] [Main Bot] + Betöltve: commands.basic.altalanos
+2026-09-11 21:32:09 [INFO] [Main Bot] [OK] commands.automata (RSS és Automata Parancsok) betöltve.
+2026-09-11 21:32:09 [INFO] [Main Bot] + Betöltve: commands.basic.automata
+2026-09-11 21:32:09 [INFO] [Main Bot] [OK] commands.development (Fejlesztői Parancsok) betöltve.
+2026-09-11 21:32:09 [INFO] [Main Bot] + Betöltve: commands.basic.dev
+2026-09-11 21:32:09 [INFO] [Main Bot] [OK] commands.moderacio betöltve.
+2026-09-11 21:32:09 [INFO] [Main Bot] + Betöltve: commands.basic.mod
+2026-09-11 21:32:09 [INFO] [Main Bot] [OK] commands.szerverbeallitasok (Szerverbeállítások) betöltve.
+2026-09-11 21:32:09 [INFO] [Main Bot] + Betöltve: commands.basic.ssettings
+2026-09-11 21:32:09 [INFO] [Main Bot] [OK] commands.tulajdonos (Tulajdonosi Parancsok: Restart, Broadcast, Tesztmod) betöltve.
+2026-09-11 21:32:09 [INFO] [Main Bot] + Betöltve: commands.basic.tulaj
+2026-09-11 21:32:09 [INFO] [Main Bot] + Betöltve: commands.basic.music
+2026-09-11 21:32:09 [INFO] [Main Bot] [OK] commands.voicech (Temp Channel) betöltve.
+2026-09-11 21:32:09 [INFO] [Main Bot] + Betöltve: commands.basic.tempvoice
+2026-09-11 21:32:09 [INFO] [Main Bot] [OK] commands.boxes |    szerencsedobozok betöltve.
+2026-09-11 21:32:09 [INFO] [Main Bot] + Betöltve: commands.economy.boxes
+2026-09-11 21:32:09 [INFO] [Main Bot] [OK] commands.economy.economy |  Economy fő fájl betöltve.
+2026-09-11 21:32:09 [INFO] [Main Bot] + Betöltve: commands.economy.economy
+2026-09-11 21:32:09 [INFO] [Main Bot] [OK] commands.economy.shop | Economy shop betöltve.
+2026-09-11 21:32:09 [INFO] [Main Bot] + Betöltve: commands.economy.shop
+2026-09-11 21:32:09 [INFO] [Main Bot] [OK] commands.challenges (Mérföldkő & Küldetés rendszer) betöltve.
+2026-09-11 21:32:09 [INFO] [Main Bot] + Betöltve: commands.economy.challenges
+2026-09-11 21:32:09 [INFO] [Main Bot] [OK] commands.economy.bank | Economy Bankrendszer betöltve.
+2026-09-11 21:32:09 [INFO] [Main Bot] + Betöltve: commands.economy.bank
+2026-09-11 21:32:09 [INFO] [Main Bot] [OK] commands.economy.core | Economy Core betöltve
+2026-09-11 21:32:09 [INFO] [Main Bot] + Betöltve: commands.economy.core
+2026-09-11 21:32:09 [INFO] [Main Bot] [OK] commands.economy.jobs |     Economy Munkák betöltve.
+2026-09-11 21:32:09 [INFO] [Main Bot] + Betöltve: commands.economy.jobs
+2026-09-11 21:32:09 [INFO] [Main Bot] [OK] commands.economy.quests |   Kihivások betöltve.
+2026-09-11 21:32:09 [INFO] [Main Bot] + Betöltve: commands.economy.quests
+2026-09-11 21:32:09 [INFO] [Main Bot] [OK] commands.economy.stocks | Economy Részvények betöltve.
+2026-09-11 21:32:09 [INFO] [Main Bot] + Betöltve: commands.economy.stocks
+2026-09-11 21:32:09 [INFO] [Main Bot] [OK] commands.economy.companies |    Vállalati parancsok betöltve.
+2026-09-11 21:32:09 [INFO] [Main Bot] + Betöltve: commands.economy.companies
+2026-09-11 21:32:09 [INFO] [Main Bot] [OK] commands.games.lobby |  Lobby rendszer betöltve.
+2026-09-11 21:32:09 [INFO] [Main Bot] + Betöltve: commands.games.lobby
+2026-09-11 21:32:09 [INFO] [Main Bot] [OK] commands.games.hangman (Elixír & Küldetés Integrációval) betöltve.
+2026-09-11 21:32:09 [INFO] [Main Bot] + Betöltve: commands.games.hangman
+2026-09-11 21:32:09 [INFO] [Main Bot] [OK] commands.games.amoba |  Amőba betöltve.
+2026-09-11 21:32:09 [INFO] [Main Bot] + Betöltve: commands.games.amoba
+2026-09-11 21:32:09 [INFO] [Main Bot] [OK] commands.games.blackjack |  BlackJack betöltve.
+2026-09-11 21:32:09 [INFO] [Main Bot] + Betöltve: commands.games.blackjack
+2026-09-11 21:32:09 [INFO] [Main Bot] [OK] commands.games.torpedo | Torpedó betöltve.
+2026-09-11 21:32:09 [INFO] [Main Bot] + Betöltve: commands.games.torpedo
+2026-09-11 21:32:09 [INFO] [Main Bot] [OK] commands.games.wof | Wheel Of Furtune betöltve.
+2026-09-11 21:32:09 [INFO] [Main Bot] + Betöltve: commands.games.wof
+2026-09-11 21:32:09 [INFO] [Main Bot] [OK] commands.games.quiz | Quiz játék betöltve.
+2026-09-11 21:32:09 [INFO] [Main Bot] + Betöltve: commands.games.quiz
+2026-09-11 21:32:09 [INFO] [Main Bot] [OK] commands.games.hilo |   Kissebb nagyobb betöltve.
+2026-09-11 21:32:09 [INFO] [Main Bot] + Betöltve: commands.games.hilo
+2026-09-11 21:32:09 [INFO] [Main Bot] [OK] commands.games.lotto.admin (és main) betöltve.
+2026-09-11 21:32:09 [INFO] [Main Bot] + Betöltve: commands.games.lotto.admin
+2026-09-11 21:32:09 [INFO] [Main Bot] [OK] commands.games.rulett |   KerékRulett betöltve.
+2026-09-11 21:32:09 [INFO] [Main Bot] + Betöltve: commands.games.rulett
+2026-09-11 21:32:09 [INFO] [Main Bot] [OK] commands.games.slot |   Félkarú Rabló betöltve.
+2026-09-11 21:32:09 [INFO] [Main Bot] + Betöltve: commands.games.slot
+2026-09-11 21:32:09 [INFO] [Main Bot] [OK] commands.games.coinflip |   CoinFlip betöltve.
+2026-09-11 21:32:09 [INFO] [Main Bot] + Betöltve: commands.games.coinflip
+2026-09-11 21:32:09 [INFO] [Main Bot] [OK] commands.games.race |   Lóverseny betöltve.
+2026-09-11 21:32:09 [INFO] [Main Bot] + Betöltve: commands.games.race
+2026-09-11 21:32:09 [INFO] [Main Bot] [OK] commands.games.akna |   akna mező betöltve.
+2026-09-11 21:32:09 [INFO] [Main Bot] + Betöltve: commands.games.akna
+2026-09-11 21:32:09 [INFO] [Main Bot] [OK] commands.games.orosz |  OroszRulett betöltve.
+2026-09-11 21:32:09 [INFO] [Main Bot] + Betöltve: commands.games.orosz
+2026-09-11 21:32:09 [INFO] [Main Bot] [OK] commands.games.kpo |    Kő Papir Ollo betöltve.
+2026-09-11 21:32:09 [INFO] [Main Bot] + Betöltve: commands.games.kpo
+2026-09-11 21:32:09 [INFO] [Main Bot] [OK] commands.games.uno |    Unó betöltve.
+2026-09-11 21:32:09 [INFO] [Main Bot] + Betöltve: commands.games.uno
+2026-09-11 21:32:09 [INFO] [Main Bot] [OK] commands.games.snake | Snake betöltve.
+2026-09-11 21:32:09 [INFO] [Main Bot] + Betöltve: commands.games.snake
+2026-09-11 21:32:09 [INFO] [Main Bot] [OK] commands.games.mmind |  MasterMind betöltve.
+2026-09-11 21:32:09 [INFO] [Main Bot] + Betöltve: commands.games.mmind
+2026-09-11 21:32:09 [INFO] [Main Bot] [OK] commands.games.crash |  Repülő crash betöltve.
+2026-09-11 21:32:09 [INFO] [Main Bot] + Betöltve: commands.games.crash
+2026-09-11 21:32:09 [INFO] [Main Bot] [OK commands.games.kockapoker |  KockaPóker betöltve.]
+2026-09-11 21:32:09 [INFO] [Main Bot] + Betöltve: commands.games.kockapoker
+2026-09-11 21:32:09 [INFO] [Main Bot] [ok] commands.games.liar |   Liar's Bar játék betöltve.
+2026-09-11 21:32:09 [INFO] [Main Bot] + Betöltve: commands.games.liar
+2026-09-11 21:32:09 [EVENT] [Main Bot] [INFO] Konfigurációs fájl nem létezik, új jön létre.
+2026-09-11 21:32:09 [INFO] [Main Bot] + Betöltve: commands.games.alszik.commands
+2026-09-11 21:32:09 [INFO] [Main Bot] + Betöltve: commands.games.alszik.actions
+2026-09-11 21:32:09 [INFO] [Main Bot] + Betöltve: commands.games.alszik.gameinfo
+2026-09-11 21:32:09 [INFO] [Main Bot] [OK] commands.economy.castles.castles (Teljes Várrendszer) betöltve.
+2026-09-11 21:32:09 [INFO] [Main Bot] + Betöltve: commands.economy.castles.castles
+2026-09-11 21:32:09 [INFO] [Main Bot] + Betöltve: bot_vezerlo
+2026-09-11 21:32:09 [INFO] [Main Bot] ------------------------------------------------------------
+2026-09-11 21:32:09 [INFO] [Main Bot] parancsok betöltve
+2026-09-11 21:32:09 [INFO] [Main Bot] ------------------------------------------------------------
+2026-09-11 21:32:09 [INFO] [Main Bot] [STARTUP] Perzisztens Ticket nyitó View regisztrálva.
+2026-09-11 21:32:09 [INFO] [Main Bot] [Lotto] Várok a bot elindulására az időellenőrző loophoz...
+2026-09-11 21:32:11 [INFO] [Main Bot] [2026-09-11 21:32:11] [INFO    ] discord.gateway: Shard ID None has connected to Gateway (Session ID: 7ad0d3fa3b97bff9c4d5961286abb5e4).
+2026-09-11 21:32:13 [INFO] [Main Bot] ------ Kész vagyok! Bejelentkezve: MainBot#2341 (ID: 1534156950512734409) ------
+2026-09-11 21:32:13 [INFO] [Main Bot] Aktív szerverek száma: 2
+2026-09-11 21:32:13 [EVENT] [Main Bot] [DEBUG] Mentési útvonal: C:\Users\Nukre\Desktop\MainBot Panel\bot_stats.json
+2026-09-11 21:32:13 [EVENT] [Main Bot] [DEBUG] Aktuális guild szám: 2, User szám: 119
+2026-09-11 21:32:13 [EVENT] [Main Bot] [DEBUG] bot_stats.json sikeresen kiírva!
+2026-09-11 21:32:13 [INFO] [Main Bot] [PANEL HELPER] 2 szerver adatai szinkronizálva!
+2026-09-11 21:32:13 [INFO] [Main Bot] [OK] cogs.shop (Pajzsokkal) betöltve.
+2026-09-11 21:32:15 [INFO] [Main Bot] [LottoAdmin] Slash parancsok (/lottoszam, /lotto_reset) szinkronizálva.
+2026-09-11 21:35:55 [EVENT] [Main Bot] Bot újraindítása...
+2026-09-11 21:35:55 [EVENT] [Main Bot] Bot folyamat leállítva.
+2026-09-11 21:35:56 [SUCCESS] [Main Bot] Bot folyamat elindítva (PID: 6908)
+2026-09-11 21:35:58 [INFO] [Main Bot] [2026-09-11 21:35:58] [INFO    ] discord.client: logging in using static token
+2026-09-11 21:35:59 [INFO] [Main Bot] --- Bot indítása (setup_hook) ---
+2026-09-11 21:35:59 [INFO] [Main Bot] [OK] SQLite adatbázis inicializálva: C:\Users\Nukre\Desktop\MainBot Panel\data\server_data.db
+2026-09-11 21:35:59 [INFO] [Main Bot] [STARTUP] Adatbázis inicializálva.
+2026-09-11 21:35:59 [INFO] [Main Bot] [STARTUP] Panel Helper inicializálva.
+2026-09-11 21:35:59 [INFO] [Main Bot] ------------------------------------------------------------
+2026-09-11 21:35:59 [INFO] [Main Bot] cogs betöltése
+2026-09-11 21:35:59 [INFO] [Main Bot] ------------------------------------------------------------
+2026-09-11 21:35:59 [INFO] [Main Bot] + Betöltve: cogs.afk_loop
+2026-09-11 21:35:59 [EVENT] [Main Bot] [INFO] AuditLogWatcher cog aszinkron módon betöltve.
+2026-09-11 21:35:59 [INFO] [Main Bot] + Betöltve: cogs.audit_log
+2026-09-11 21:35:59 [INFO] [Main Bot] + Betöltve: cogs.automod
+2026-09-11 21:35:59 [INFO] [Main Bot] [OK] cogs.dev_ticket (Fejlesztői Ticket Rendszer) betöltve.
+2026-09-11 21:35:59 [INFO] [Main Bot] + Betöltve: cogs.dev_ticket
+2026-09-11 21:35:59 [INFO] [Main Bot] [STARTUP] cogs.rrole_logic (Reakció Rangok) betöltve.
+2026-09-11 21:35:59 [INFO] [Main Bot] + Betöltve: cogs.rrole_logic
+2026-09-11 21:35:59 [INFO] [Main Bot] [OK] Verzió betöltve a version.py-ból: 5.5.8
+2026-09-11 21:35:59 [INFO] [Main Bot] [OK] cogs.settings (Globális Konfig) betöltve.
+2026-09-11 21:35:59 [INFO] [Main Bot] [OK] cogs.rss_logika (Háttérlogika) betöltve.
+2026-09-11 21:35:59 [INFO] [Main Bot] + Betöltve: cogs.rss_logika
+2026-09-11 21:35:59 [INFO] [Main Bot] [OK] cogs.szolgaltatasok (Háttérszolgáltatások) betöltve.
+2026-09-11 21:35:59 [INFO] [Main Bot] + Betöltve: cogs.szolgaltatasok
+2026-09-11 21:35:59 [INFO] [Main Bot] [STARTUP] cogs.ertekeles (JSON Értékelő Rendszer) betöltve.
+2026-09-11 21:35:59 [INFO] [Main Bot] [OK] cogs.ertekeles (JSON Értékelő Rendszer) betöltve.
+2026-09-11 21:35:59 [INFO] [Main Bot] + Betöltve: cogs.ertekeles
+2026-09-11 21:35:59 [INFO] [Main Bot] + Betöltve: cogs.music
+2026-09-11 21:35:59 [INFO] [Main Bot] LOBBY MANAGER BETÖLTVE.
+2026-09-11 21:35:59 [INFO] [Main Bot] + Betöltve: cogs.lobby_manager
+2026-09-11 21:35:59 [INFO] [Main Bot] + Betöltve: cogs.shop
+2026-09-11 21:35:59 [INFO] [Main Bot] ------------------------------------------------------------
+2026-09-11 21:35:59 [INFO] [Main Bot] cogs betöltve
+2026-09-11 21:35:59 [INFO] [Main Bot] ------------------------------------------------------------
+2026-09-11 21:35:59 [INFO] [Main Bot] ------------------------------------------------------------
+2026-09-11 21:35:59 [INFO] [Main Bot] parancsok betöltése....
+2026-09-11 21:35:59 [INFO] [Main Bot] ------------------------------------------------------------
+2026-09-11 21:35:59 [INFO] [Main Bot] [STARTUP] Commands betöltése...
+2026-09-11 21:35:59 [INFO] [Main Bot] [OK] commands.parancsok betöltve.
+2026-09-11 21:35:59 [INFO] [Main Bot] + Betöltve: commands.basic.cmd
+2026-09-11 21:35:59 [INFO] [Main Bot] + Betöltve: commands.basic.altalanos
+2026-09-11 21:35:59 [INFO] [Main Bot] [OK] commands.automata (RSS és Automata Parancsok) betöltve.
+2026-09-11 21:35:59 [INFO] [Main Bot] + Betöltve: commands.basic.automata
+2026-09-11 21:35:59 [INFO] [Main Bot] [OK] commands.development (Fejlesztői Parancsok) betöltve.
+2026-09-11 21:35:59 [INFO] [Main Bot] + Betöltve: commands.basic.dev
+2026-09-11 21:35:59 [INFO] [Main Bot] [OK] commands.moderacio betöltve.
+2026-09-11 21:35:59 [INFO] [Main Bot] + Betöltve: commands.basic.mod
+2026-09-11 21:35:59 [INFO] [Main Bot] [OK] commands.szerverbeallitasok (Szerverbeállítások) betöltve.
+2026-09-11 21:35:59 [INFO] [Main Bot] + Betöltve: commands.basic.ssettings
+2026-09-11 21:35:59 [INFO] [Main Bot] [OK] commands.tulajdonos (Tulajdonosi Parancsok: Restart, Broadcast, Tesztmod) betöltve.
+2026-09-11 21:35:59 [INFO] [Main Bot] + Betöltve: commands.basic.tulaj
+2026-09-11 21:35:59 [INFO] [Main Bot] + Betöltve: commands.basic.music
+2026-09-11 21:35:59 [INFO] [Main Bot] [OK] commands.voicech (Temp Channel) betöltve.
+2026-09-11 21:35:59 [INFO] [Main Bot] + Betöltve: commands.basic.tempvoice
+2026-09-11 21:35:59 [INFO] [Main Bot] [OK] commands.boxes |    szerencsedobozok betöltve.
+2026-09-11 21:35:59 [INFO] [Main Bot] + Betöltve: commands.economy.boxes
+2026-09-11 21:35:59 [INFO] [Main Bot] [OK] commands.economy.economy |  Economy fő fájl betöltve.
+2026-09-11 21:35:59 [INFO] [Main Bot] + Betöltve: commands.economy.economy
+2026-09-11 21:35:59 [INFO] [Main Bot] [OK] commands.economy.shop | Economy shop betöltve.
+2026-09-11 21:35:59 [INFO] [Main Bot] + Betöltve: commands.economy.shop
+2026-09-11 21:35:59 [INFO] [Main Bot] [OK] commands.challenges (Mérföldkő & Küldetés rendszer) betöltve.
+2026-09-11 21:35:59 [INFO] [Main Bot] + Betöltve: commands.economy.challenges
+2026-09-11 21:35:59 [INFO] [Main Bot] [OK] commands.economy.bank | Economy Bankrendszer betöltve.
+2026-09-11 21:35:59 [INFO] [Main Bot] + Betöltve: commands.economy.bank
+2026-09-11 21:35:59 [INFO] [Main Bot] [OK] commands.economy.core | Economy Core betöltve
+2026-09-11 21:35:59 [INFO] [Main Bot] + Betöltve: commands.economy.core
+2026-09-11 21:35:59 [INFO] [Main Bot] [OK] commands.economy.jobs |     Economy Munkák betöltve.
+2026-09-11 21:35:59 [INFO] [Main Bot] + Betöltve: commands.economy.jobs
+2026-09-11 21:35:59 [INFO] [Main Bot] [OK] commands.economy.quests |   Kihivások betöltve.
+2026-09-11 21:35:59 [INFO] [Main Bot] + Betöltve: commands.economy.quests
+2026-09-11 21:35:59 [INFO] [Main Bot] [OK] commands.economy.stocks | Economy Részvények betöltve.
+2026-09-11 21:35:59 [INFO] [Main Bot] + Betöltve: commands.economy.stocks
+2026-09-11 21:35:59 [INFO] [Main Bot] [OK] commands.economy.companies |    Vállalati parancsok betöltve.
+2026-09-11 21:35:59 [INFO] [Main Bot] + Betöltve: commands.economy.companies
+2026-09-11 21:35:59 [INFO] [Main Bot] [OK] commands.games.lobby |  Lobby rendszer betöltve.
+2026-09-11 21:35:59 [INFO] [Main Bot] + Betöltve: commands.games.lobby
+2026-09-11 21:35:59 [INFO] [Main Bot] [OK] commands.games.hangman (Elixír & Küldetés Integrációval) betöltve.
+2026-09-11 21:35:59 [INFO] [Main Bot] + Betöltve: commands.games.hangman
+2026-09-11 21:35:59 [INFO] [Main Bot] [OK] commands.games.amoba |  Amőba betöltve.
+2026-09-11 21:35:59 [INFO] [Main Bot] + Betöltve: commands.games.amoba
+2026-09-11 21:35:59 [INFO] [Main Bot] [OK] commands.games.blackjack |  BlackJack betöltve.
+2026-09-11 21:35:59 [INFO] [Main Bot] + Betöltve: commands.games.blackjack
+2026-09-11 21:35:59 [INFO] [Main Bot] [OK] commands.games.torpedo | Torpedó betöltve.
+2026-09-11 21:35:59 [INFO] [Main Bot] + Betöltve: commands.games.torpedo
+2026-09-11 21:35:59 [INFO] [Main Bot] [OK] commands.games.wof | Wheel Of Furtune betöltve.
+2026-09-11 21:35:59 [INFO] [Main Bot] + Betöltve: commands.games.wof
+2026-09-11 21:35:59 [INFO] [Main Bot] [OK] commands.games.quiz | Quiz játék betöltve.
+2026-09-11 21:35:59 [INFO] [Main Bot] + Betöltve: commands.games.quiz
+2026-09-11 21:35:59 [INFO] [Main Bot] [OK] commands.games.hilo |   Kissebb nagyobb betöltve.
+2026-09-11 21:35:59 [INFO] [Main Bot] + Betöltve: commands.games.hilo
+2026-09-11 21:35:59 [INFO] [Main Bot] [OK] commands.games.lotto.admin (és main) betöltve.
+2026-09-11 21:35:59 [INFO] [Main Bot] + Betöltve: commands.games.lotto.admin
+2026-09-11 21:35:59 [INFO] [Main Bot] [OK] commands.games.rulett |   KerékRulett betöltve.
+2026-09-11 21:35:59 [INFO] [Main Bot] + Betöltve: commands.games.rulett
+2026-09-11 21:35:59 [INFO] [Main Bot] [OK] commands.games.slot |   Félkarú Rabló betöltve.
+2026-09-11 21:35:59 [INFO] [Main Bot] + Betöltve: commands.games.slot
+2026-09-11 21:35:59 [INFO] [Main Bot] [OK] commands.games.coinflip |   CoinFlip betöltve.
+2026-09-11 21:35:59 [INFO] [Main Bot] + Betöltve: commands.games.coinflip
+2026-09-11 21:35:59 [INFO] [Main Bot] [OK] commands.games.race |   Lóverseny betöltve.
+2026-09-11 21:35:59 [INFO] [Main Bot] + Betöltve: commands.games.race
+2026-09-11 21:35:59 [INFO] [Main Bot] [OK] commands.games.akna |   akna mező betöltve.
+2026-09-11 21:35:59 [INFO] [Main Bot] + Betöltve: commands.games.akna
+2026-09-11 21:35:59 [INFO] [Main Bot] [OK] commands.games.orosz |  OroszRulett betöltve.
+2026-09-11 21:35:59 [INFO] [Main Bot] + Betöltve: commands.games.orosz
+2026-09-11 21:35:59 [INFO] [Main Bot] [OK] commands.games.kpo |    Kő Papir Ollo betöltve.
+2026-09-11 21:35:59 [INFO] [Main Bot] + Betöltve: commands.games.kpo
+2026-09-11 21:35:59 [INFO] [Main Bot] [OK] commands.games.uno |    Unó betöltve.
+2026-09-11 21:35:59 [INFO] [Main Bot] + Betöltve: commands.games.uno
+2026-09-11 21:35:59 [INFO] [Main Bot] [OK] commands.games.snake | Snake betöltve.
+2026-09-11 21:35:59 [INFO] [Main Bot] + Betöltve: commands.games.snake
+2026-09-11 21:35:59 [INFO] [Main Bot] [OK] commands.games.mmind |  MasterMind betöltve.
+2026-09-11 21:35:59 [INFO] [Main Bot] + Betöltve: commands.games.mmind
+2026-09-11 21:35:59 [INFO] [Main Bot] [OK] commands.games.crash |  Repülő crash betöltve.
+2026-09-11 21:35:59 [INFO] [Main Bot] + Betöltve: commands.games.crash
+2026-09-11 21:35:59 [INFO] [Main Bot] [OK commands.games.kockapoker |  KockaPóker betöltve.]
+2026-09-11 21:35:59 [INFO] [Main Bot] + Betöltve: commands.games.kockapoker
+2026-09-11 21:35:59 [INFO] [Main Bot] [ok] commands.games.liar |   Liar's Bar játék betöltve.
+2026-09-11 21:35:59 [INFO] [Main Bot] + Betöltve: commands.games.liar
+2026-09-11 21:35:59 [EVENT] [Main Bot] [INFO] Konfigurációs fájl nem létezik, új jön létre.
+2026-09-11 21:35:59 [INFO] [Main Bot] + Betöltve: commands.games.alszik.commands
+2026-09-11 21:35:59 [INFO] [Main Bot] + Betöltve: commands.games.alszik.actions
+2026-09-11 21:35:59 [INFO] [Main Bot] + Betöltve: commands.games.alszik.gameinfo
+2026-09-11 21:35:59 [INFO] [Main Bot] [OK] commands.economy.castles.castles (Teljes Várrendszer) betöltve.
+2026-09-11 21:35:59 [INFO] [Main Bot] + Betöltve: commands.economy.castles.castles
+2026-09-11 21:35:59 [INFO] [Main Bot] + Betöltve: bot_vezerlo
+2026-09-11 21:35:59 [INFO] [Main Bot] ------------------------------------------------------------
+2026-09-11 21:35:59 [INFO] [Main Bot] parancsok betöltve
+2026-09-11 21:35:59 [INFO] [Main Bot] ------------------------------------------------------------
+2026-09-11 21:35:59 [INFO] [Main Bot] [STARTUP] Perzisztens Ticket nyitó View regisztrálva.
+2026-09-11 21:35:59 [INFO] [Main Bot] [Lotto] Várok a bot elindulására az időellenőrző loophoz...
+2026-09-11 21:36:00 [INFO] [Main Bot] [2026-09-11 21:36:00] [INFO    ] discord.gateway: Shard ID None has connected to Gateway (Session ID: 7f11850399a57dd4b31bb1b36edb005a).
+2026-09-11 21:36:02 [INFO] [Main Bot] ------ Kész vagyok! Bejelentkezve: MainBot#2341 (ID: 1534156950512734409) ------
+2026-09-11 21:36:02 [INFO] [Main Bot] Aktív szerverek száma: 2
+2026-09-11 21:36:02 [EVENT] [Main Bot] [DEBUG] Mentési útvonal: C:\Users\Nukre\Desktop\MainBot Panel\bot_stats.json
+2026-09-11 21:36:02 [EVENT] [Main Bot] [DEBUG] Aktuális guild szám: 2, User szám: 119
+2026-09-11 21:36:02 [EVENT] [Main Bot] [DEBUG] bot_stats.json sikeresen kiírva!
+2026-09-11 21:36:02 [INFO] [Main Bot] [PANEL HELPER] 2 szerver adatai szinkronizálva!
+2026-09-11 21:36:02 [INFO] [Main Bot] [OK] cogs.shop (Pajzsokkal) betöltve.
+2026-09-11 21:36:04 [INFO] [Main Bot] [LottoAdmin] Slash parancsok (/lottoszam, /lotto_reset) szinkronizálva.
+2026-09-11 21:43:20 [EVENT] [Main Bot] Bot folyamat leállítva.
+2026-09-11 21:55:55 [EVENT] Example plugin betöltve.
+2026-09-11 21:55:55 [INFO] A Discord Bot Vezérlőpult sikeresen elindult.
+2026-09-11 22:10:40 [EVENT] Example plugin betöltve.
+2026-09-11 22:10:40 [INFO] A Discord Bot Vezérlőpult sikeresen elindult.
+2026-09-11 22:16:02 [EVENT] Example plugin betöltve.
+2026-09-11 22:16:02 [INFO] A Discord Bot Vezérlőpult sikeresen elindult.

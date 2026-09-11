@@ -1,0 +1,24 @@
+{
+    "active_bot": "Main Bot",
+    "bots": {
+        "Main Bot": {
+            "name": "Main Bot",
+            "path": "",
+            "autostart": false,
+            "test_mode": false,
+            "restart_days": 0,
+            "restart_hours": 0,
+            "restart_mins": 0,
+            "midnight_restart": false,
+            "error_sound": false,
+            "volume": 50,
+            "allowed_discord_ids": [],
+            "total_commands": 0,
+            "weekly_uptime_seconds": 0,
+            "auto_restart_on_crash": false,
+            "crash_restart_delay": 10,
+            "activity_enabled": true,
+            "activity_loop": []
+        }
+    }
+}

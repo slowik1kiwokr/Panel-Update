@@ -1,0 +1,7 @@
+customtkinter
+psutil
+matplotlib
+pystray
+Pillow
+pypresence
+discord.py

@@ -1,0 +1,2957 @@
+# --- BOT MANAGER PANEL (Továbbfejlesztett Változat - Teszt Mód Kapcsolóval) ---
+import os
+import sys
+import time
+import threading
+import psutil
+import sqlite3
+import ast
+import logging
+import datetime
+import json
+import uuid
+import secrets
+import importlib.util
+import re
+import webbrowser
+import winsound
+import ctypes
+import subprocess
+import tkinter as tk
+from tkinter import ttk
+import zipfile
+from tkinter import filedialog, messagebox, simpledialog
+import customtkinter as ctk
+import pystray
+from PIL import Image, ImageDraw
+
+# Matplotlib import a grafikonokhoz
+try:
+    import matplotlib
+    matplotlib.use("TkAgg")
+    import matplotlib.pyplot as plt
+    from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+    MATPLOTLIB_AVAILABLE = True
+except ImportError:
+    MATPLOTLIB_AVAILABLE = False
+    MATPLOTLIB_ERROR = "A matplotlib csomag nem tölthető be."
+
+# Opcionális Discord Rich Presence könyvtár (pip install pypresence)
+try:
+    from pypresence import Presence
+    RPC_AVAILABLE = True
+except ImportError:
+    RPC_AVAILABLE = False
+
+# Windows AppUserModelID a tálcaikon helyes megjelenítéséhez
+try:
+    ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID("discord.bot.manager.panel.v2")
+except Exception:
+    pass
+
+ctk.set_appearance_mode("dark")
+ctk.set_default_color_theme("blue")
+
+# --- KONFIGURÁCIÓS FÁJLOK ÚTVONALAI ---
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+BOTS_FILE = os.path.join(SCRIPT_DIR, "bots.json")
+SETTINGS_FILE = os.path.join(SCRIPT_DIR, "settings.json")
+LANG_FILE = os.path.join(SCRIPT_DIR, "lang.json")
+PANEL_ID = "#" + secrets.token_hex(8).upper()
+BOT_INVITE_URL = "https://discord.com/oauth2/authorize?client_id=1524467307361861663&permissions=8&integration_type=0&scope=bot"
+REMOTE_COMMANDS_FILE = os.path.join(SCRIPT_DIR, "panel_commands.json")
+REMOTE_RESPONSES_DIR = os.path.join(SCRIPT_DIR, "panel_responses")
+BROADCAST_REQUESTS_FILE = os.path.join(SCRIPT_DIR, "panel_broadcast_requests.json")
+BACKUP_DIR = os.path.join(SCRIPT_DIR, "backups")
+DISCORD_ICON_PATH = os.path.join(SCRIPT_DIR, "discord_icon.ico")
+PLUGINS_DIR = os.path.join(SCRIPT_DIR, "plugins")
+
+VERSION_FILE_TEMPLATE = '''BOT_NAME = "Main Bot"
+BOT_VERSION = "1.0.0"
+BOT_TOKEN = "ide_ird_a_bot_tokened"
+'''
+
+INFO_FILE_TEMPLATE = '''from version import BOT_NAME, BOT_VERSION
+
+BOT_INFO = {
+    "name": BOT_NAME,
+    "version": BOT_VERSION,
+}
+'''
+
+# --- BOT_VEZERLO.PY BEÁGYAZOTT SABLON (INTEGRÁCIÓHOZ) ---
+BOT_VEZERLO_CODE = '''# --- BOT_VEZERLO.PY (Helyezd a botod fő .py fájlja mellé) ---
+import os
+import json
+import discord
+from discord.ext import commands, tasks
+
+class BotVezerlo(commands.Cog):
+    def __init__(self, bot):
+        self.bot = bot
+        self.stats_loop.start()
+
+    def cog_unload(self):
+        self.stats_loop.cancel()
+
+    def load_config(self):
+        """Betölti a panel által módosított beállításokat a bot_config.json-ből."""
+        bot_dir = os.path.dirname(os.path.abspath(__file__))
+        config_path = os.path.join(bot_dir, "bot_config.json")
+        if os.path.exists(config_path):
+            try:
+                with open(config_path, "r", encoding="utf-8") as f:
+                    return json.load(f)
+            except Exception:
+                pass
+        return {"test_mode": False}
+
+    @tasks.loop(seconds=2)
+    async def stats_loop(self):
+        try:
+            guilds_count = len(self.bot.guilds)
+            users_count = sum(g.member_count for g in self.bot.guilds if g.member_count)
+            api_ping = round(self.bot.latency * 1000)
+            
+            config = self.load_config()
+            test_mode_status = config.get("test_mode", False)
+
+            stats_data = {
+                "guilds": guilds_count,
+                "users": users_count,
+                "api_ping": api_ping,
+                "msg_ping": api_ping,
+                "test_mode_active": test_mode_status
+            }
+            
+            bot_dir = os.path.dirname(os.path.abspath(__file__))
+            stats_path = os.path.join(bot_dir, "bot_stats.json")
+            with open(stats_path, "w", encoding="utf-8") as f:
+                json.dump(stats_data, f, ensure_ascii=False, indent=4)
+                
+            servers_dir = os.path.join(bot_dir, "data", "servers")
+            if not os.path.exists(servers_dir):
+                os.makedirs(servers_dir, exist_ok=True)
+                
+            for guild in self.bot.guilds:
+                s_path = os.path.join(servers_dir, f"server_{guild.id}.json")
+                s_data = {
+                    "server_id": guild.id,
+                    "server_name": guild.name,
+                    "member_count": guild.member_count,
+                    "owner": str(guild.owner)
+                }
+                with open(s_path, "w", encoding="utf-8") as f:
+                    json.dump(s_data, f, ensure_ascii=False, indent=4)
+        except Exception as e:
+            print(f"Hiba a statisztika mentésekor: {e}")
+
+    @stats_loop.before_loop
+    async def before_stats(self):
+        await self.bot.wait_until_ready()
+
+    @commands.command(name="teszt", aliases=["test"])
+    async def teszt_parancs(self, ctx):
+        config = self.load_config()
+        test_mode = config.get("test_mode", False)
+
+        if not test_mode:
+            await ctx.send("❌ A **Teszt mód** jelenleg **KI van kapcsolva** a vezérlőpanelen!")
+            return
+
+        await ctx.send("✅ A teszt mód aktív, a parancs sikeresen lefutott!")
+
+async def setup(bot):
+    await bot.add_cog(BotVezerlo(bot))
+'''
+
+# A panel ezt a sablont menti a felhasznalo sajat botmappajaba.
+BOT_VEZERLO_CODE = r'''import asyncio
+import datetime
+import json
+import os
+import uuid
+
+import discord
+from discord import app_commands
+from discord.ext import commands, tasks
+
+BOT_DIR = os.path.dirname(os.path.abspath(__file__))
+CONFIG_PATH = os.path.join(BOT_DIR, "bot_config.json")
+STATS_PATH = os.path.join(BOT_DIR, "bot_stats.json")
+try:
+    from version import BOT_NAME, BOT_VERSION
+except ImportError:
+    BOT_NAME, BOT_VERSION = "Main Bot", "1.0.0"
+
+class BotVezerlo(commands.Cog):
+    def __init__(self, bot):
+        self.bot = bot
+        self.connected_panel_id = None
+        self.connected_source = "Discord"
+        self.stats_loop.start()
+
+    def load_config(self):
+        try:
+            with open(CONFIG_PATH, "r", encoding="utf-8") as config_file:
+                return json.load(config_file)
+        except (OSError, json.JSONDecodeError):
+            return {"panel_id": "#00001", "test_mode": False}
+
+    def panel_directory(self):
+        configured_path = self.load_config().get("panel_dir", "")
+        if configured_path and os.path.isdir(configured_path):
+            return configured_path
+        return os.path.dirname(os.path.abspath(__file__))
+
+    async def request_panel(self, action, user, bot_name="Main Bot", data=None):
+        config = self.load_config()
+        expected_id = config.get("panel_id", "#00001")
+        if self.connected_panel_id != expected_id:
+            return "Elobb hasznald a /connect parancsot."
+
+        panel_dir = self.panel_directory()
+        command_path = os.path.join(panel_dir, "panel_commands.json")
+        response_dir = os.path.join(panel_dir, "panel_responses")
+        os.makedirs(response_dir, exist_ok=True)
+        request_id = uuid.uuid4().hex
+        request = {
+            "id": request_id,
+            "action": action,
+            "user": user,
+            "source": self.connected_source,
+            "bot": bot_name,
+            "data": data or {},
+            "created_at": datetime.datetime.now().isoformat(timespec="seconds")
+        }
+        try:
+            pending = []
+            if os.path.exists(command_path):
+                with open(command_path, "r", encoding="utf-8") as command_file:
+                    pending = json.load(command_file)
+            pending.append(request)
+            temporary_path = command_path + ".tmp"
+            with open(temporary_path, "w", encoding="utf-8") as command_file:
+                json.dump(pending, command_file, ensure_ascii=False)
+            os.replace(temporary_path, command_path)
+        except (OSError, json.JSONDecodeError) as error:
+            return f"A panel nem erheto el: {error}"
+
+        response_path = os.path.join(response_dir, request_id + ".json")
+        for _ in range(20):
+            await asyncio.sleep(0.5)
+            if os.path.exists(response_path):
+                try:
+                    with open(response_path, "r", encoding="utf-8") as response_file:
+                        response = json.load(response_file)
+                    os.remove(response_path)
+                    if action == "broadcast" and response.get("action") == "broadcast":
+                        return await self.broadcast_to_guilds(response.get("data", {}))
+                    return response.get("message", "Nincs valasz.")
+                except (OSError, json.JSONDecodeError):
+                    return "A panel valasza nem olvashato."
+        return "A panel 10 masodpercen belul nem valaszolt."
+
+    async def broadcast_to_guilds(self, data):
+        message = str(data.get("message", "")).strip()
+        channel_map = {str(key): str(value) for key, value in data.get("channels", {}).items()}
+        if not message:
+            return "A broadcast uzenete ures."
+        sent = 0
+        failed = 0
+        for guild in self.bot.guilds:
+            channel_id = channel_map.get(str(guild.id))
+            channel = self.bot.get_channel(int(channel_id)) if channel_id and channel_id.isdigit() else None
+            if channel is None:
+                channel = next((candidate for candidate in guild.text_channels if candidate.permissions_for(guild.me).send_messages), None)
+            if channel is None:
+                failed += 1
+                continue
+            try:
+                await channel.send(message)
+                sent += 1
+            except (discord.Forbidden, discord.HTTPException):
+                failed += 1
+        return f"Broadcast elkuldve. Sikeres: {sent}, sikertelen: {failed}."
+
+    @tasks.loop(seconds=2)
+    async def stats_loop(self):
+        await self.process_panel_broadcasts()
+        config = self.load_config()
+        activities = config.get("activity_loop", [])
+        if not activities and config.get("activity_text", ""):
+            activities = [{"type": config.get("activity_type", "Playing"), "text": config.get("activity_text", "")}]
+        if config.get("activity_enabled", True) and activities:
+            interval_seconds = max(60, int(config.get("activity_interval_minutes", 5)) * 60)
+            activity = activities[int(datetime.datetime.now().timestamp() // interval_seconds) % len(activities)]
+            activity_text = activity.get("text", "")
+            activity_type = activity.get("type", "Playing")
+            activity_class = {
+                "Listening": discord.ActivityType.listening,
+                "Watching": discord.ActivityType.watching,
+                "Streaming": discord.ActivityType.streaming,
+            }.get(activity_type, discord.ActivityType.playing)
+            if activity_text:
+                await self.bot.change_presence(activity=discord.Activity(type=activity_class, name=activity_text))
+        stats = {
+            "panel_id": config.get("panel_id", "#00001"),
+            "guilds": len(self.bot.guilds),
+            "users": sum(g.member_count or 0 for g in self.bot.guilds),
+            "api_ping": round(self.bot.latency * 1000),
+            "test_mode_active": config.get("test_mode", False),
+            "name": BOT_NAME,
+            "version": BOT_VERSION,
+            "updated_at": datetime.datetime.now().isoformat(timespec="seconds")
+        }
+        try:
+            with open(STATS_PATH, "w", encoding="utf-8") as stats_file:
+                json.dump(stats, stats_file, ensure_ascii=False, indent=4)
+            servers_dir = os.path.join(BOT_DIR, "data", "servers")
+            os.makedirs(servers_dir, exist_ok=True)
+            for guild in self.bot.guilds:
+                with open(os.path.join(servers_dir, f"{guild.id}.json"), "w", encoding="utf-8") as server_file:
+                    json.dump({
+                        "guild_id": guild.id,
+                        "name": guild.name,
+                        "member_count": guild.member_count,
+                        "owner": str(guild.owner),
+                        "description": guild.description,
+                        "created_at": guild.created_at.isoformat(),
+                        "bot_name": BOT_NAME,
+                        "version": BOT_VERSION,
+                        "updated_at": datetime.datetime.now().isoformat(timespec="seconds")
+                    }, server_file, ensure_ascii=False, indent=4)
+        except OSError:
+            pass
+
+    async def process_panel_broadcasts(self):
+        request_path = os.path.join(self.panel_directory(), "panel_broadcast_requests.json")
+        if not os.path.exists(request_path):
+            return
+        try:
+            with open(request_path, "r", encoding="utf-8") as request_file:
+                requests = json.load(request_file)
+            remaining = []
+            for request in requests:
+                if request.get("bot", BOT_NAME) != BOT_NAME:
+                    remaining.append(request)
+                    continue
+                result = await self.broadcast_to_guilds(request)
+                self.connected_source = "Panel"
+                print("[BROADCAST]", result)
+            temporary_path = request_path + ".tmp"
+            with open(temporary_path, "w", encoding="utf-8") as request_file:
+                json.dump(remaining, request_file, ensure_ascii=False)
+            os.replace(temporary_path, request_path)
+        except (OSError, json.JSONDecodeError):
+            return
+
+    @stats_loop.before_loop
+    async def before_stats(self):
+        await self.bot.wait_until_ready()
+
+    @app_commands.command(name="connect", description="Kapcsolodas a panelhez")
+    @app_commands.describe(panel_id="A panel azonositoja, peldaul #12345", device="Telefon vagy PC")
+    @app_commands.choices(device=[
+        app_commands.Choice(name="Telefon", value="Telefon"),
+        app_commands.Choice(name="PC", value="PC")
+    ])
+    async def connect(self, interaction: discord.Interaction, panel_id: str, device: app_commands.Choice[str] = None):
+        if panel_id.strip() != self.load_config().get("panel_id", "#00001"):
+            await interaction.response.send_message("Hibas panelazonosito.", ephemeral=True)
+            return
+        self.connected_panel_id = panel_id.strip()
+        self.connected_source = device.value if device else "Discord"
+        await interaction.response.send_message("Kapcsolodva a panelhez.", ephemeral=True)
+
+    async def remote_command(self, interaction, action, bot_name="Main Bot"):
+        config = self.load_config()
+        allowed_ids = {str(value) for value in config.get("allowed_discord_ids", [])}
+        if config.get("test_mode", False) and str(interaction.user.id) not in allowed_ids:
+            await interaction.response.send_message("A bot teszt módban van. Jelenleg csak a tesztelők használhatják.", ephemeral=True)
+            return
+        if not self.connected_panel_id:
+            await interaction.response.send_message("Elobb hasznald a /connect parancsot.", ephemeral=True)
+            return
+        await interaction.response.defer()
+        result = await self.request_panel(action, str(interaction.user), bot_name)
+        await interaction.followup.send(result[:1900])
+
+    @app_commands.command(name="broadcast", description="Uzenet kuldese az osszes csatlakoztatott szerverre")
+    @app_commands.describe(message="A globalis uzenet szovege", bot_neve="A panelben levo bot neve")
+    async def broadcast(self, interaction: discord.Interaction, message: str, bot_neve: str = "Main Bot"):
+        config = self.load_config()
+        allowed_ids = {str(value) for value in config.get("allowed_discord_ids", [])}
+        if config.get("test_mode", False) and str(interaction.user.id) not in allowed_ids:
+            await interaction.response.send_message("A bot teszt modban van. Jelenleg csak a tesztelok hasznalhatjak.", ephemeral=True)
+            return
+        if not self.connected_panel_id:
+            await interaction.response.send_message("Elobb hasznald a /connect parancsot.", ephemeral=True)
+            return
+        await interaction.response.defer(ephemeral=True)
+        result = await self.request_panel("broadcast", str(interaction.user), bot_neve, {"message": message})
+        await interaction.followup.send(result[:1900], ephemeral=True)
+
+    @app_commands.command(name="vezerles", description="Panelen lévő bot kezelése")
+    @app_commands.describe(muvelet="Művelet", bot_neve="A panelben lévő bot neve")
+    @app_commands.choices(muvelet=[
+        app_commands.Choice(name="Indítás", value="start"),
+        app_commands.Choice(name="Leállítás", value="stop"),
+        app_commands.Choice(name="Újraindítás", value="restart"),
+        app_commands.Choice(name="Állapot", value="status"),
+        app_commands.Choice(name="Napló", value="log")
+    ])
+    async def vezerles(self, interaction: discord.Interaction, muvelet: app_commands.Choice[str], bot_neve: str = "Main Bot"):
+        await self.remote_command(interaction, muvelet.value, bot_neve)
+
+    @app_commands.command(name="info", description="Panel informacio")
+    async def info(self, interaction: discord.Interaction):
+        await self.remote_command(interaction, "info")
+
+    @app_commands.command(name="status", description="Panel allapot")
+    async def status(self, interaction: discord.Interaction):
+        await self.remote_command(interaction, "status")
+
+    @app_commands.command(name="stressz", description="Erőforras ellenorzes")
+    async def stressz(self, interaction: discord.Interaction):
+        await self.remote_command(interaction, "stressz")
+
+    @app_commands.command(name="log", description="Panel naplo")
+    async def log(self, interaction: discord.Interaction):
+        await self.remote_command(interaction, "log")
+
+    @app_commands.command(name="start", description="Bot inditasa")
+    async def start(self, interaction: discord.Interaction):
+        await self.remote_command(interaction, "start")
+
+    @app_commands.command(name="stop", description="Bot leallitasa")
+    async def stop(self, interaction: discord.Interaction):
+        await self.remote_command(interaction, "stop")
+
+    @app_commands.command(name="restart", description="Bot ujrainditasa")
+    async def restart(self, interaction: discord.Interaction):
+        await self.remote_command(interaction, "restart")
+
+    @app_commands.command(name="kilepes", description="A bot kilep egy Discord szerverrol")
+    @app_commands.describe(guild_id="A Discord szerver azonositoja")
+    async def kilepes(self, interaction: discord.Interaction, guild_id: str):
+        if not self.connected_panel_id:
+            await interaction.response.send_message("Elobb hasznald a /connect parancsot.", ephemeral=True)
+            return
+        try:
+            guild = self.bot.get_guild(int(guild_id))
+        except ValueError:
+            guild = None
+        if guild is None:
+            await interaction.response.send_message("Nem talalhato ilyen szerver.", ephemeral=True)
+            return
+        await guild.leave()
+        await interaction.response.send_message(f"A bot kilepett innen: {guild.name}")
+
+async def setup(bot):
+    await bot.add_cog(BotVezerlo(bot))
+'''
+
+PANEL_EXTENSION_CODE = BOT_VEZERLO_CODE
+
+# --- GLOBÁLIS LOGOLÁSI RENDSZER BEÁLLÍTÁSA ---
+LOG_DIR = os.path.join(SCRIPT_DIR, "logs")
+if not os.path.exists(LOG_DIR):
+    os.makedirs(LOG_DIR)
+os.makedirs(REMOTE_RESPONSES_DIR, exist_ok=True)
+
+log_file_path = os.path.join(LOG_DIR, "bot_log.txt")
+logging.basicConfig(
+    filename=log_file_path,
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(message)s",
+    encoding="utf-8"
+)
+
+# --- NYELVI SZÓTÁR (TRANSLATIONS) ---
+LANGUAGES = {
+    "Magyar": {
+        "title": "Discord Bot Manager - Professzionális Multi-Bot Panel",
+        "online": "● ONLINE",
+        "offline": "● OFFLINE",
+        "dashboard": "Vezérlőpult",
+        "start": "▶️ Bot Indítása",
+        "restart": "🔄 Újraindítás",
+        "stop": "🛑 Leállítás",
+        "settings": "⚙️ Beállítások",
+        "global_stats": "📊 Globális Statisztika",
+        "servers": "🌐 Szerverek",
+        "bot_script": "Bot Fájl:",
+        "env_ok": "🔑 .env: OK",
+        "env_missing": "🔑 .env: Hiányzik",
+        "env_na": "🔑 .env: N/A",
+        "save": "💾 Mentés",
+        "browse": "📁 Tallózás",
+        "autostart": "Auto-indítás",
+        "auto_restart": "Auto Újraindítás",
+        "midnight_restart": "Éjféli Újraindítás (Midnight)",
+        "error_sound": "Hiba Hang",
+        "sound_volume": "Hangerő",
+        "test_mode": "🧪 Teszt Mód",
+        "live_logs": "Élő Naplók (Live Logs)",
+        "all": "ÖSSZES",
+        "errors": "HIBÁK",
+        "success": "SIKER",
+        "events": "ESEMÉNYEK",
+        "search_placeholder": "🔍 Keresés a logokban...",
+        "clear": "Törlés",
+        "autoscroll": "Automatikus Görgetés",
+        "metrics": "📊 Pro Metrikák",
+        "uptime": "Futási Idő (Munkamenet)",
+        "weekly_uptime": "Heti Futási Idő",
+        "ping": "Ping Válaszidők",
+        "total_commands": "Összes Parancs",
+        "ram": "RAM Használat",
+        "cpu": "CPU Használat",
+        "guilds": "Szerverek (Guilds)",
+        "users": "Elért Felhasználók",
+        "error_counter": "Hiba Számláló",
+        "open_charts": "📈 Teljesítmény Grafikon"
+    },
+    "English": {
+        "title": "Discord Bot Manager - Professional Multi-Bot Panel",
+        "online": "● ONLINE",
+        "offline": "● OFFLINE",
+        "dashboard": "Dashboard",
+        "start": "▶️ Start Bot",
+        "restart": "🔄 Restart",
+        "stop": "🛑 Stop",
+        "settings": "⚙️ Settings",
+        "global_stats": "📊 Global Stats",
+        "servers": "🌐 Servers",
+        "bot_script": "Bot Script:",
+        "env_ok": "🔑 .env: OK",
+        "env_missing": "🔑 .env: Missing",
+        "env_na": "🔑 .env: N/A",
+        "save": "💾 Save",
+        "browse": "📁 Browse",
+        "autostart": "Auto-start",
+        "auto_restart": "Auto Restart",
+        "midnight_restart": "Midnight Restart",
+        "error_sound": "Error Sound",
+        "sound_volume": "Volume",
+        "test_mode": "🧪 Test Mode",
+        "live_logs": "Live Logs",
+        "all": "ALL",
+        "errors": "ERRORS",
+        "success": "SUCCESS",
+        "events": "EVENTS",
+        "search_placeholder": "🔍 Search logs...",
+        "clear": "Clear",
+        "autoscroll": "Auto-Scroll",
+        "metrics": "📊 Professional Metrics",
+        "uptime": "Uptime (Session)",
+        "weekly_uptime": "Weekly Uptime",
+        "ping": "Ping Latency",
+        "total_commands": "Total Commands",
+        "ram": "RAM Usage",
+        "cpu": "CPU Usage",
+        "guilds": "Guilds (Servers)",
+        "users": "Users Reached",
+        "error_counter": "Error Counter",
+        "open_charts": "📈 Performance Chart"
+    }
+}
+
+try:
+    with open(LANG_FILE, "r", encoding="utf-8") as language_file:
+        LANGUAGES = json.load(language_file)
+except (OSError, json.JSONDecodeError):
+    pass
+
+LANGUAGES.setdefault("Magyar", {}).update({
+    "backup_new": "Új mentés", "backup_restore": "Kijelölt visszaállítása", "refresh": "Frissítés",
+    "sqlite_file": "SQLite .db / .sqlite fájl", "chart_ram": "RAM használat", "chart_cpu": "CPU használat",
+    "error": "Hiba", "warning": "Figyelem", "rename": "Átnevezés", "delete": "Törlés",
+    "save_changes": "Mentés", "edit": "Szerkesztés", "confirm": "Megerősítés", "export": "Export"
+})
+
+class BotManagerApp(ctk.CTk):
+    def __init__(self):
+        super().__init__()
+
+        self.current_language = "English"
+        self.selected_error_sound = "Alap (Beep)"
+        self.minimize_to_tray_enabled = True
+        self.current_theme = "Discord Sötét (Alap)"
+        self.custom_icon_path = ""
+        self.panel_password = ""
+        
+        self.log_save_level = "Mindent mentse"
+        self.max_ram_mb = 200
+        self.task_kill_enabled = False
+        self.rpc_enabled = True
+        self.backup_enabled = True
+        self.backup_on_start = False
+        self.backup_interval_hours = 24
+        self.backup_last_run = ""
+        self.plugins = []
+        self.temperature_text = "-"
+        self.temperature_last_update = 0
+        self.stat_card_headers = []
+        self.dual_stat_headers = []
+
+        self.is_loading = True
+        self.bots = {}
+        self.active_bot_key = "Main Bot"
+
+        self.load_config()
+
+        if self.panel_password:
+            self.withdraw()
+            if not self.prompt_startup_password():
+                sys.exit(0)
+
+        self.apply_theme_setting(self.current_theme)
+        self.apply_window_icon()
+
+        self.title(self.tr("title"))
+        self.geometry("1280x800")
+        self.minsize(1050, 700)
+
+        self.protocol('WM_DELETE_WINDOW', self.on_window_close)
+
+        self._build_tabs()
+        self._build_sidebar()
+        self._build_main_content()
+
+        self.switch_bot(self.active_bot_key)
+        self.is_loading = False
+        self.save_config()
+
+        self.render_tabs()
+        self.update_stats_loop()
+
+        self.is_monitoring = True
+        threading.Thread(target=self.resource_monitor_loop, daemon=True).start()
+        self.init_discord_rpc()
+        self.load_plugins()
+        threading.Thread(target=self.temperature_monitor_loop, daemon=True).start()
+
+        self.after(1500, self.check_and_run_autostarts)
+        self.after(3000, self.check_scheduled_backup)
+        self.after(500, self.process_remote_commands)
+        self.log_event("INFO", "A Discord Bot Vezérlőpult sikeresen elindult.")
+
+    def prompt_startup_password(self):
+        pwd_win = ctk.CTkToplevel(self)
+        pwd_win.title(self.tr("password_title"))
+        pwd_win.geometry("360x220")
+        pwd_win.resizable(False, False)
+        pwd_win.grab_set()
+        pwd_win.protocol("WM_DELETE_WINDOW", lambda: sys.exit(0))
+        
+        ctk.CTkLabel(pwd_win, text=self.tr("password_protection"), font=("Arial", 16, "bold"), text_color="#5865F2").pack(pady=(20, 5))
+        ctk.CTkLabel(pwd_win, text=self.tr("enter_password"), font=("Arial", 12)).pack(pady=(0, 10))
+        
+        pwd_in = ctk.CTkEntry(pwd_win, show="*", width=260, placeholder_text=self.tr("password"))
+        pwd_in.pack(pady=5)
+        pwd_in.focus()
+        
+        success = [False]
+        
+        def verify(event=None):
+            if pwd_in.get() == self.panel_password:
+                success[0] = True
+                pwd_win.destroy()
+                self.deiconify()
+            else:
+                messagebox.showerror("Hiba", "Hibás jelszó!", parent=pwd_win)
+                pwd_in.delete(0, "end")
+        
+        pwd_in.bind("<Return>", verify)
+        ctk.CTkButton(pwd_win, text=self.tr("login"), fg_color="#27ae60", hover_color="#2ecc71", width=260, command=verify).pack(pady=15)
+        
+        self.wait_window(pwd_win)
+        return success[0]
+
+    def log_event(self, level, message):
+        should_log = False
+        if self.log_save_level == "Mindent mentse":
+            should_log = True
+        elif self.log_save_level == "Csak hibák" and level == "ERROR":
+            should_log = True
+        elif self.log_save_level == "Csak események" and level == "EVENT":
+            should_log = True
+        elif self.log_save_level == "Sikeres interakciók" and level == "SUCCESS":
+            should_log = True
+
+        if should_log:
+            timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            log_line = f"{timestamp} [{level}] {message}\n"
+            try:
+                with open(log_file_path, "a", encoding="utf-8") as f:
+                    f.write(log_line)
+            except Exception as e:
+                print(f"Hiba a logírás során: {e}")
+
+    def audit_remote_action(self, user, source, action, result):
+        """A távoli parancsokat külön, géppel feldolgozható naplóban rögzíti."""
+        audit_entry = {
+            "timestamp": datetime.datetime.now().isoformat(timespec="seconds"),
+            "user": user,
+            "source": source,
+            "action": action,
+            "result": result,
+            "panel_id": PANEL_ID
+        }
+        audit_path = os.path.join(LOG_DIR, "audit_log.jsonl")
+        try:
+            with open(audit_path, "a", encoding="utf-8") as audit_file:
+                audit_file.write(json.dumps(audit_entry, ensure_ascii=False) + "\n")
+            self.log_event("EVENT", f"[AUDIT] {user} ({source}) -> {action}: {result}")
+        except Exception as error:
+            self.log_event("ERROR", f"Audit naplózási hiba: {error}")
+
+    def process_remote_commands(self):
+        """A bot által leadott parancsokat a Tk főszálán hajtja végre."""
+        commands = []
+        if os.path.exists(REMOTE_COMMANDS_FILE):
+            try:
+                with open(REMOTE_COMMANDS_FILE, "r", encoding="utf-8") as command_file:
+                    commands = json.load(command_file)
+                with open(REMOTE_COMMANDS_FILE, "w", encoding="utf-8") as command_file:
+                    json.dump([], command_file)
+            except (OSError, json.JSONDecodeError):
+                commands = []
+
+        for request in commands:
+            response = self.execute_remote_command(request)
+            response_path = os.path.join(REMOTE_RESPONSES_DIR, f"{request.get('id', uuid.uuid4().hex)}.json")
+            try:
+                with open(response_path, "w", encoding="utf-8") as response_file:
+                    json.dump(response, response_file, ensure_ascii=False)
+            except OSError as error:
+                self.log_event("ERROR", f"Távoli válasz mentési hiba: {error}")
+        self.after(500, self.process_remote_commands)
+
+    def execute_remote_command(self, request):
+        action = request.get("action", "").lower()
+        user = request.get("user", "ismeretlen")
+        source = request.get("source", "Discord")
+        bot_key = request.get("bot", self.active_bot_key)
+        if bot_key not in self.bots:
+            result = f"Ismeretlen bot: {bot_key}"
+            self.audit_remote_action(user, source, action, result)
+            return {"ok": False, "message": result}
+
+        previous_bot = self.active_bot_key
+        self.switch_bot(bot_key)
+        try:
+            if action == "start":
+                self.start_bot()
+                result = f"{bot_key} indítási parancsa kiadva."
+            elif action == "stop":
+                self.stop_bot()
+                result = f"{bot_key} leállítási parancsa kiadva."
+            elif action == "restart":
+                self.restart_bot()
+                result = f"{bot_key} újraindítási parancsa kiadva."
+            elif action == "stressz":
+                result = f"Stresszteszt ellenőrzés kész: fut={self.bots[bot_key]['is_running']}, rendszer CPU={psutil.cpu_percent(interval=0.2):.1f}%, hőmérséklet={self.get_temperature_text()}."
+            elif action in ("status", "info"):
+                result = self.remote_status_text(bot_key)
+            elif action == "log":
+                recent = self.bots[bot_key]["raw_logs"][-8:]
+                result = "\n".join(f"[{entry['time']}] {entry['type']}: {entry['msg']}" for entry in recent) or "Nincs naplóbejegyzés."
+            elif action == "broadcast":
+                result = "A broadcastot a BotVezerlo hajtja végre."
+                return {"ok": True, "action": "broadcast", "data": request.get("data", {}), "message": result}
+            else:
+                result = "Ismeretlen parancs. Használható: start, stop, restart, info, status, stressz, log."
+                self.audit_remote_action(user, source, action, result)
+                return {"ok": False, "message": result}
+            self.audit_remote_action(user, source, action, result)
+            return {"ok": True, "message": result}
+        finally:
+            self.switch_bot(previous_bot)
+
+    def remote_status_text(self, bot_key):
+        bot = self.bots[bot_key]
+        temperature = self.get_temperature_text()
+        ram = "n/a"
+        cpu = "n/a"
+        if bot["is_running"] and bot["process"]:
+            try:
+                process = psutil.Process(bot["process"].pid)
+                ram = f"{process.memory_info().rss / (1024 * 1024):.1f} MB"
+                cpu = f"{process.cpu_percent(interval=None):.1f}%"
+            except psutil.Error:
+                pass
+        return f"Panel {PANEL_ID} | {bot_key}: {'ONLINE' if bot['is_running'] else 'OFFLINE'} | RAM {ram} | CPU {cpu} | Hőmérséklet {temperature}"
+
+    def get_temperature_text(self):
+        return self.temperature_text
+
+    def read_temperature(self):
+        temperature = self.tr("unavailable")
+        try:
+            sensors = psutil.sensors_temperatures()
+            values = [reading.current for entries in sensors.values() for reading in entries if reading.current is not None]
+            if values:
+                return f"{max(values):.1f} C"
+        except (AttributeError, OSError):
+            pass
+        if os.name == "nt":
+            try:
+                result = subprocess.run(
+                    ["powershell", "-NoProfile", "-Command", "Get-CimInstance -Namespace root/wmi -ClassName MSAcpi_ThermalZoneTemperature | Select-Object -ExpandProperty CurrentTemperature"],
+                    capture_output=True, text=True, timeout=2, creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0)
+                )
+                temperatures = []
+                for line in result.stdout.splitlines():
+                    if line.strip().isdigit():
+                        temperatures.append((int(line.strip()) / 10) - 273.15)
+                if temperatures:
+                    return f"{max(temperatures):.1f} C"
+            except (OSError, subprocess.SubprocessError, ValueError):
+                pass
+        return temperature
+
+    def temperature_monitor_loop(self):
+        while getattr(self, "is_monitoring", True):
+            try:
+                value = self.read_temperature()
+                self.after(0, self.update_temperature_value, value)
+            except Exception:
+                pass
+            time.sleep(30)
+
+    def update_temperature_value(self, value):
+        self.temperature_text = value
+        if hasattr(self, "lbl_temperature"):
+            self.lbl_temperature.configure(text=value)
+
+    def copy_panel_connect_command(self):
+        command = f"/connect panel_id:{PANEL_ID} device:PC"
+        self.clipboard_clear()
+        self.clipboard_append(command)
+        self.update()
+        messagebox.showinfo(self.tr("copied"), command)
+
+    def tr(self, key):
+        language = LANGUAGES.get(self.current_language, LANGUAGES.get("English", {}))
+        return language.get(key, LANGUAGES.get("English", {}).get(key, key))
+
+    def apply_language(self, language):
+        if language not in LANGUAGES:
+            return
+        self.current_language = language
+        if hasattr(self, "sidebar"):
+            self.update_ui_texts()
+
+    def apply_theme_setting(self, theme_name):
+        self.current_theme = theme_name
+        if theme_name == "Discord Sötét (Alap)":
+            ctk.set_appearance_mode("dark")
+            ctk.set_default_color_theme("blue")
+            self.theme_colors = {
+                "accent": "#1f538d", "accent_hover": "#143d6e",
+                "sidebar_bg": "#2b2b2b", "card_bg": "#232323",
+                "text": "white", "subtext": "#aaaaaa", "save_btn": "#27ae60", "save_hover": "#2ecc71"
+            }
+        elif theme_name == "Discord Világos":
+            ctk.set_appearance_mode("light")
+            ctk.set_default_color_theme("blue")
+            self.theme_colors = {
+                "accent": "#3b8ed0", "accent_hover": "#36719f",
+                "sidebar_bg": "#e0e0e0", "card_bg": "#f0f0f0",
+                "text": "black", "subtext": "#444444", "save_btn": "#27ae60", "save_hover": "#2ecc71"
+            }
+        elif theme_name == "Discord Blurple (Lila-Kék)":
+            ctk.set_appearance_mode("dark")
+            ctk.set_default_color_theme("dark-blue")
+            self.theme_colors = {
+                "accent": "#5865F2", "accent_hover": "#4752C4",
+                "sidebar_bg": "#2f3136", "card_bg": "#202225",
+                "text": "white", "subtext": "#b9bbbe", "save_btn": "#5865F2", "save_hover": "#4752C4"
+            }
+        elif theme_name == "Discord Zöld (Hacker)":
+            ctk.set_appearance_mode("dark")
+            ctk.set_default_color_theme("green")
+            self.theme_colors = {
+                "accent": "#2ecc71", "accent_hover": "#27ae60",
+                "sidebar_bg": "#1b261b", "card_bg": "#141c14",
+                "text": "white", "subtext": "#7ecc8e", "save_btn": "#2ecc71", "save_hover": "#27ae60"
+            }
+        else:
+            self.theme_colors = {
+                "accent": "#1f538d", "accent_hover": "#143d6e",
+                "sidebar_bg": "#2b2b2b", "card_bg": "#232323",
+                "text": "white", "subtext": "#aaaaaa", "save_btn": "#27ae60", "save_hover": "#2ecc71"
+            }
+
+        if hasattr(self, 'sidebar'):
+            try:
+                self.sidebar.configure(fg_color=self.theme_colors["sidebar_bg"])
+                self.btn_settings.configure(fg_color=self.theme_colors["accent"], hover_color=self.theme_colors["accent_hover"])
+                self.btn_save_path.configure(fg_color=self.theme_colors["save_btn"], hover_color=self.theme_colors["save_hover"])
+            except Exception:
+                pass
+
+    def apply_window_icon(self):
+        if os.path.isfile(DISCORD_ICON_PATH):
+            try:
+                self.iconbitmap(DISCORD_ICON_PATH)
+                return
+            except Exception:
+                pass
+        if self.custom_icon_path and os.path.exists(self.custom_icon_path):
+            try:
+                self.iconbitmap(self.custom_icon_path)
+                return
+            except Exception:
+                pass
+        
+        try:
+            temp_icon_path = os.path.join(SCRIPT_DIR, "temp_app_icon.ico")
+            if not os.path.exists(temp_icon_path):
+                img = Image.new('RGBA', (64, 64), (0, 0, 0, 0))
+                d = ImageDraw.Draw(img)
+                d.rounded_rectangle([4, 4, 60, 60], radius=14, fill=(88, 101, 242))
+                d.ellipse([20, 20, 44, 44], fill=(255, 255, 255))
+                img.save(temp_icon_path, format='ICO', sizes=[(64, 64), (32, 32), (16, 16)])
+            self.iconbitmap(temp_icon_path)
+        except Exception:
+            pass
+
+    def _build_tabs(self):
+        self.top_tab_frame = ctk.CTkFrame(self, height=40, corner_radius=0)
+        self.top_tab_frame.pack(side="top", fill="x")
+
+        self.tab_buttons_frame = ctk.CTkFrame(self.top_tab_frame, fg_color="transparent")
+        self.tab_buttons_frame.pack(side="left", fill="x")
+
+        self.btn_add_bot = ctk.CTkButton(self.top_tab_frame, text="+", width=30, fg_color="#2b2b2b", command=self.add_bot_dialog)
+        self.btn_add_bot.pack(side="left", padx=5, pady=5)
+
+    def _build_sidebar(self):
+        self.sidebar = ctk.CTkFrame(self, width=236, corner_radius=0, fg_color=self.theme_colors["sidebar_bg"])
+        self.sidebar.pack(side="left", fill="y")
+        self.sidebar.pack_propagate(False)
+
+        self.lbl_status = ctk.CTkLabel(self.sidebar, text=self.tr("offline"), text_color="#e74c3c", font=("Arial", 16, "bold"))
+        self.lbl_status.pack(padx=20, pady=(16, 8))
+
+        self.sidebar_menu = ctk.CTkScrollableFrame(self.sidebar, fg_color="transparent", corner_radius=0)
+        self.sidebar_menu.pack(fill="both", expand=True, padx=4, pady=(0, 6))
+        menu = self.sidebar_menu
+        ctk.CTkLabel(menu, text=self.tr("control_section"), font=("Arial", 11, "bold"), text_color=self.theme_colors["subtext"]).pack(anchor="w", padx=8, pady=(4, 3))
+
+        self.btn_dashboard = ctk.CTkButton(menu, text=self.tr("dashboard"), fg_color="transparent", anchor="w", height=34)
+        self.btn_dashboard.pack(fill="x", padx=6, pady=2)
+
+        self.btn_start = ctk.CTkButton(menu, text=self.tr("start"), fg_color="#27ae60", hover_color="#2ecc71", command=self.start_bot, height=34)
+        self.btn_start.pack(fill="x", padx=6, pady=2)
+
+        self.btn_restart = ctk.CTkButton(menu, text=self.tr("restart"), fg_color="#d35400", hover_color="#e67e22", command=self.restart_bot, height=34)
+        self.btn_restart.pack(fill="x", padx=6, pady=2)
+
+        self.btn_stop = ctk.CTkButton(menu, text=self.tr("stop"), fg_color="#c0392b", hover_color="#e74c3c", command=self.stop_bot, height=34)
+        self.btn_stop.pack(fill="x", padx=6, pady=2)
+
+        ctk.CTkLabel(menu, text=self.tr("bulk_control"), font=("Arial", 11, "bold"), text_color=self.theme_colors["subtext"]).pack(anchor="w", padx=8, pady=(14, 3))
+        batch_frame = ctk.CTkFrame(menu, fg_color=self.theme_colors["card_bg"], corner_radius=8)
+        batch_frame.pack(fill="x", padx=4, pady=(0, 6))
+        
+        self.btn_start_all = ctk.CTkButton(batch_frame, text=self.tr("start_all"), fg_color="#16a085", hover_color="#1abc9c", command=self.start_all_bots)
+        self.btn_start_all.pack(fill="x", padx=2, pady=2)
+        self.btn_restart_all = ctk.CTkButton(batch_frame, text=self.tr("restart_all"), fg_color="#2980b9", hover_color="#3498db", command=self.restart_all_bots)
+        self.btn_restart_all.pack(fill="x", padx=2, pady=2)
+        self.btn_stop_all = ctk.CTkButton(batch_frame, text=self.tr("stop_all"), fg_color="#7f8c8d", hover_color="#95a5a6", command=self.stop_all_bots)
+        self.btn_stop_all.pack(fill="x", padx=2, pady=2)
+
+        ctk.CTkLabel(menu, text=self.tr("tools_section"), font=("Arial", 11, "bold"), text_color=self.theme_colors["subtext"]).pack(anchor="w", padx=8, pady=(14, 3))
+        self.btn_alapok = ctk.CTkButton(menu, text=self.tr("integration"), fg_color="#8e44ad", hover_color="#9b59b6", command=self.open_alapok_window, height=34)
+        self.btn_alapok.pack(fill="x", padx=6, pady=2)
+
+        self.btn_invite = ctk.CTkButton(menu, text=self.tr("invite"), fg_color="#16a085", hover_color="#1abc9c", command=self.open_bot_invite, height=34)
+        self.btn_invite.pack(fill="x", padx=6, pady=2)
+
+        self.lbl_panel_id = ctk.CTkLabel(menu, text=f"{self.tr('panel_id')}: {PANEL_ID}", font=("Arial", 10, "bold"))
+        self.lbl_panel_id.pack(padx=6, pady=(8, 4))
+        self.btn_copy_connect = ctk.CTkButton(menu, text=self.tr("connect_command"), width=180, command=self.copy_panel_connect_command, height=32)
+        self.btn_copy_connect.pack(fill="x", padx=6, pady=(0, 5))
+
+        ctk.CTkLabel(menu, text=self.tr("stats_section"), font=("Arial", 11, "bold"), text_color=self.theme_colors["subtext"]).pack(anchor="w", padx=8, pady=(14, 3))
+        self.btn_settings = ctk.CTkButton(menu, text=self.tr("settings"), fg_color=self.theme_colors["accent"], hover_color=self.theme_colors["accent_hover"], command=self.open_settings_window_v2, height=34)
+        self.btn_settings.pack(fill="x", padx=6, pady=2)
+
+        self.btn_global_stats = ctk.CTkButton(menu, text=self.tr("global_stats"), fg_color="#8e44ad", hover_color="#9b59b6", anchor="w", command=self.open_global_stats_window, height=34)
+        self.btn_global_stats.pack(fill="x", padx=6, pady=2)
+
+        self.btn_broadcast = ctk.CTkButton(menu, text=self.tr("broadcast"), fg_color="#c0392b", hover_color="#e74c3c", anchor="w", command=self.open_broadcast_window, height=34)
+        self.btn_broadcast.pack(fill="x", padx=6, pady=2)
+
+        self.btn_backup = ctk.CTkButton(menu, text=self.tr("backups"), fg_color="#2980b9", hover_color="#3498db", anchor="w", command=self.open_backup_manager, height=34)
+        self.btn_backup.pack(fill="x", padx=6, pady=2)
+
+        self.btn_sqlite = ctk.CTkButton(menu, text=self.tr("sqlite_viewer"), fg_color="#16a085", hover_color="#1abc9c", anchor="w", command=self.open_sqlite_viewer, height=34)
+        self.btn_sqlite.pack(fill="x", padx=6, pady=2)
+
+        self.btn_plugins = ctk.CTkButton(menu, text=self.tr("plugins"), fg_color="#7f8c8d", hover_color="#95a5a6", anchor="w", command=self.open_plugins_window, height=34)
+        self.btn_plugins.pack(fill="x", padx=6, pady=(2, 8))
+
+    def _build_main_content(self):
+        self.main_frame = ctk.CTkFrame(self, corner_radius=0)
+        self.main_frame.pack(side="right", fill="both", expand=True, padx=10, pady=10)
+
+        self.settings_box = ctk.CTkFrame(self.main_frame)
+        self.settings_box.pack(fill="x", padx=10, pady=5)
+
+        self.lbl_path_title = ctk.CTkLabel(self.settings_box, text=self.tr("bot_script"), font=("Arial", 12, "bold"))
+        self.lbl_path_title.grid(row=0, column=0, padx=10, pady=(10, 5), sticky="w")
+
+        self.entry_path = ctk.CTkEntry(self.settings_box, placeholder_text=self.tr("browse_placeholder"), width=270)
+        self.entry_path.grid(row=0, column=1, padx=5, pady=(10, 5), sticky="ew")
+
+        self.lbl_env_status = ctk.CTkLabel(self.settings_box, text=self.tr("env_na"), font=("Arial", 10, "bold"), text_color="#e74c3c")
+        self.lbl_env_status.grid(row=0, column=2, padx=5, pady=(10, 5))
+
+        self.btn_save_path = ctk.CTkButton(self.settings_box, text=self.tr("save"), width=60, fg_color=self.theme_colors["save_btn"], hover_color=self.theme_colors["save_hover"], command=self.manual_save_path)
+        self.btn_save_path.grid(row=0, column=3, padx=2, pady=(10, 5))
+
+        self.btn_browse = ctk.CTkButton(self.settings_box, text=self.tr("browse"), width=60, command=self.browse_file)
+        self.btn_browse.grid(row=0, column=4, padx=2, pady=(10, 5))
+
+        self.btn_servers = ctk.CTkButton(self.settings_box, text=self.tr("servers"), width=80, fg_color="#16a085", hover_color="#1abc9c", command=self.open_servers_window)
+        self.btn_servers.grid(row=0, column=5, padx=8, pady=(10, 5))
+
+        self.btn_bot_info = ctk.CTkButton(self.settings_box, text=self.tr("bot_info"), width=90, fg_color="#8e44ad", hover_color="#9b59b6", command=self.open_bot_info_editor)
+        self.btn_bot_info.grid(row=0, column=6, padx=4, pady=(10, 5))
+
+        self.btn_activity = ctk.CTkButton(self.settings_box, text=self.tr("activity"), width=80, fg_color="#5865F2", hover_color="#4752C4", command=self.open_activity_editor)
+        self.btn_activity.grid(row=0, column=7, padx=4, pady=(10, 5))
+
+        self.autostart_var = ctk.BooleanVar(value=False)
+        self.sound_var = ctk.BooleanVar(value=False)
+        self.midnight_var = ctk.BooleanVar(value=False)
+        self.test_mode_var = ctk.BooleanVar(value=False)  # Új változó a teszt módhoz
+
+        self.chk_autostart = ctk.CTkSwitch(self.settings_box, text=self.tr("autostart"), variable=self.autostart_var, command=self.save_config)
+        self.chk_autostart.grid(row=1, column=0, padx=10, pady=5, sticky="w")
+
+        sound_main_frame = ctk.CTkFrame(self.settings_box, fg_color="transparent")
+        sound_main_frame.grid(row=1, column=1, padx=5, pady=5, sticky="w")
+
+        self.chk_sound = ctk.CTkSwitch(sound_main_frame, text=self.tr("error_sound"), variable=self.sound_var, command=self.save_config)
+        self.chk_sound.pack(side="left", padx=(0, 10))
+
+        vol_sub_frame = ctk.CTkFrame(sound_main_frame, fg_color="transparent")
+        vol_sub_frame.pack(side="left")
+        ctk.CTkLabel(vol_sub_frame, text="🔊", font=("Arial", 11)).pack(side="left", padx=(0, 2))
+        self.slider_volume = ctk.CTkSlider(vol_sub_frame, from_=0, to=100, number_of_steps=10, width=90, command=lambda v: self.on_volume_change())
+        self.slider_volume.pack(side="left")
+
+        # Új Teszt Mód kapcsoló beillesztése a kezelőpanelbe
+        self.chk_test_mode = ctk.CTkSwitch(self.settings_box, text=self.tr("test_mode"), variable=self.test_mode_var, progress_color="#e67e22", command=self.on_test_mode_toggle)
+        self.chk_test_mode.grid(row=1, column=2, padx=5, pady=5, sticky="w")
+
+        self.chk_midnight = ctk.CTkSwitch(self.settings_box, text=self.tr("midnight_restart"), variable=self.midnight_var, command=self.on_midnight_toggle)
+        self.chk_midnight.grid(row=1, column=3, padx=5, pady=5, sticky="w")
+
+        restart_frame = ctk.CTkFrame(self.settings_box, fg_color="transparent")
+        restart_frame.grid(row=2, column=0, columnspan=6, padx=5, pady=5, sticky="ew")
+
+        ctk.CTkLabel(restart_frame, text=self.tr("auto_restart_label"), font=("Arial", 11, "bold")).pack(side="left", padx=5)
+
+        self.slider_r_days = ctk.CTkSlider(restart_frame, from_=0, to=7, number_of_steps=7, width=50, command=lambda v: self.on_restart_slider_change())
+        self.slider_r_days.pack(side="left", padx=2)
+        self.lbl_r_days = ctk.CTkLabel(restart_frame, text="0d", font=("Arial", 10), width=20)
+        self.lbl_r_days.pack(side="left")
+
+        self.slider_r_hours = ctk.CTkSlider(restart_frame, from_=0, to=24, number_of_steps=24, width=50, command=lambda v: self.on_restart_slider_change())
+        self.slider_r_hours.pack(side="left", padx=2)
+        self.lbl_r_hours = ctk.CTkLabel(restart_frame, text="0h", font=("Arial", 10), width=20)
+        self.lbl_r_hours.pack(side="left")
+
+        self.slider_r_mins = ctk.CTkSlider(restart_frame, from_=0, to=60, number_of_steps=60, width=50, command=lambda v: self.on_restart_slider_change())
+        self.slider_r_mins.pack(side="left", padx=2)
+        self.lbl_r_mins = ctk.CTkLabel(restart_frame, text="0m", font=("Arial", 10), width=20)
+        self.lbl_r_mins.pack(side="left")
+
+        self.middle_frame = ctk.CTkFrame(self.main_frame, fg_color="transparent")
+        self.middle_frame.pack(fill="both", expand=True, padx=0, pady=5)
+
+        self.log_container = ctk.CTkFrame(self.middle_frame)
+        self.log_container.pack(side="left", fill="both", expand=True, padx=(0, 5))
+
+        self.log_header_frame = ctk.CTkFrame(self.log_container, fg_color="transparent")
+        self.log_header_frame.pack(fill="x", padx=10, pady=(10, 0))
+
+        self.lbl_logs_title = ctk.CTkLabel(self.log_header_frame, text=self.tr("live_logs"), font=("Arial", 14, "bold"))
+        self.lbl_logs_title.pack(side="left")
+
+        self.btn_filter_all = ctk.CTkButton(self.log_header_frame, text=self.tr("all"), width=45, command=lambda: self.filter_logs("ALL"))
+        self.btn_filter_all.pack(side="left", padx=(10, 2))
+
+        self.btn_filter_errors = ctk.CTkButton(self.log_header_frame, text=self.tr("errors"), width=55, fg_color="#c0392b", command=lambda: self.filter_logs("ERROR"))
+        self.btn_filter_errors.pack(side="left", padx=2)
+
+        self.btn_filter_success = ctk.CTkButton(self.log_header_frame, text=self.tr("success"), width=60, fg_color="#27ae60", command=lambda: self.filter_logs("SUCCESS"))
+        self.btn_filter_success.pack(side="left", padx=2)
+
+        self.btn_filter_events = ctk.CTkButton(self.log_header_frame, text=self.tr("events"), width=55, fg_color="#8e44ad", command=lambda: self.filter_logs("EVENT"))
+        self.btn_filter_events.pack(side="left", padx=2)
+
+        self.btn_clear = ctk.CTkButton(self.log_header_frame, text=self.tr("clear"), width=45, fg_color="#555555", command=self.clear_logs)
+        self.btn_clear.pack(side="right", padx=5)
+
+        self.chk_autoscroll = ctk.CTkCheckBox(self.log_header_frame, text=self.tr("autoscroll"))
+        self.chk_autoscroll.pack(side="right", padx=5)
+        self.chk_autoscroll.select()
+
+        self.log_search_frame = ctk.CTkFrame(self.log_container, fg_color="transparent")
+        self.log_search_frame.pack(fill="x", padx=10, pady=(5, 0))
+
+        self.search_entry = ctk.CTkEntry(self.log_search_frame, placeholder_text=self.tr("search_placeholder"), font=("Arial", 12))
+        self.search_entry.pack(fill="x", padx=0, pady=2)
+        self.search_entry.bind("<KeyRelease>", lambda e: self.apply_log_search_and_filter())
+
+        self.log_textbox = ctk.CTkTextbox(self.log_container, font=("Consolas", 12))
+        self.log_textbox.pack(fill="both", expand=True, padx=10, pady=10)
+
+        self.stats_panel = ctk.CTkScrollableFrame(self.middle_frame, width=260, label_text=self.tr("metrics"))
+        self.stats_panel.pack(side="right", fill="y", padx=(5, 0))
+
+        self.btn_open_charts = ctk.CTkButton(self.stats_panel, text=self.tr("open_charts"), fg_color="#e67e22", hover_color="#d35400", command=self.open_performance_charts_window)
+        self.btn_open_charts.pack(fill="x", padx=5, pady=(2, 8))
+
+        self.stats_section_labels = []
+        bot_info_label = ctk.CTkLabel(self.stats_panel, text=self.tr("bot_information"), font=("Arial", 12, "bold"), text_color="#3498db")
+        bot_info_label.pack(anchor="w", padx=8, pady=(4, 2))
+        self.stats_section_labels.append((bot_info_label, "bot_information"))
+        self.lbl_bot_name = self._create_stat_card(self.tr("bot_name"), "-", icon="🤖")
+        self.lbl_bot_version = self._create_stat_card(self.tr("bot_version"), "-", icon="🏷️")
+        self.lbl_uptime = self._create_stat_card(self.tr("uptime"), "00:00:00", icon="⏱️")
+        self.lbl_weekly_uptime = self._create_stat_card(self.tr("weekly_uptime"), "0h 0m", icon="📅")
+        self.lbl_api_ping, self.lbl_msg_ping = self._create_dual_stat_card(self.tr("ping"), "API: 0ms", "Msg: 0ms", icon="📡")
+        self.lbl_commands = self._create_stat_card(self.tr("total_commands"), "0", icon="⚡")
+        pc_info_label = ctk.CTkLabel(self.stats_panel, text=self.tr("pc_resources"), font=("Arial", 12, "bold"), text_color="#2ecc71")
+        pc_info_label.pack(anchor="w", padx=8, pady=(8, 2))
+        self.stats_section_labels.append((pc_info_label, "pc_resources"))
+        self.lbl_ram = self._create_stat_card(self.tr("ram"), "0 MB", icon="💾")
+        self.lbl_cpu = self._create_stat_card(self.tr("cpu"), "0 %", icon="💻")
+        self.lbl_temperature = self._create_stat_card(self.tr("temperature_pc"), self.tr("unavailable"), icon="🌡️")
+        self.lbl_servers = self._create_stat_card(self.tr("guilds"), "0", icon="🌐")
+        self.lbl_users = self._create_stat_card(self.tr("users"), "0", icon="👥")
+        self.lbl_errors = self._create_stat_card(self.tr("error_counter"), "0", text_color="#e74c3c", icon="⚠️")
+
+    def _create_stat_card(self, title, default_val, text_color=None, icon=""):
+        if text_color is None:
+            text_color = self.theme_colors["text"]
+        card = ctk.CTkFrame(self.stats_panel, fg_color=self.theme_colors["card_bg"], corner_radius=6)
+        card.pack(fill="x", padx=5, pady=4)
+        header_f = ctk.CTkFrame(card, fg_color="transparent")
+        header_f.pack(fill="x", padx=8, pady=(4, 0))
+        header = ctk.CTkLabel(header_f, text=f"{icon} {title}", font=("Arial", 11, "bold"), text_color=self.theme_colors["subtext"])
+        header.pack(side="left")
+        self.stat_card_headers.append((header, title))
+        lbl_val = ctk.CTkLabel(card, text=default_val, font=("Arial", 13, "bold"), text_color=text_color)
+        lbl_val.pack(anchor="w", padx=10, pady=(0, 6))
+        return lbl_val
+
+    def _create_dual_stat_card(self, title, val1, val2, icon=""):
+        card = ctk.CTkFrame(self.stats_panel, fg_color=self.theme_colors["card_bg"], corner_radius=6)
+        card.pack(fill="x", padx=5, pady=4)
+        header = ctk.CTkLabel(card, text=f"{icon} {title}", font=("Arial", 11, "bold"), text_color=self.theme_colors["subtext"])
+        header.pack(anchor="w", padx=8, pady=(4, 2))
+        self.dual_stat_headers.append((header, title))
+        sub_f = ctk.CTkFrame(card, fg_color="transparent")
+        sub_f.pack(fill="x", padx=8, pady=(0, 6))
+        lbl1 = ctk.CTkLabel(sub_f, text=val1, font=("Arial", 12, "bold"), text_color="#3498db")
+        lbl1.pack(side="left", expand=True)
+        lbl2 = ctk.CTkLabel(sub_f, text=val2, font=("Arial", 12, "bold"), text_color="#2ecc71")
+        lbl2.pack(side="right", expand=True)
+        return lbl1, lbl2
+
+    def open_bot_invite(self):
+        webbrowser.open(BOT_INVITE_URL)
+
+    def open_broadcast_window(self):
+        win = ctk.CTkToplevel(self)
+        win.title(self.tr("broadcast_title"))
+        win.geometry("620x520")
+        win.grab_set()
+        ctk.CTkLabel(win, text=self.tr("broadcast_help"), font=("Arial", 16, "bold")).pack(pady=12)
+        ctk.CTkLabel(win, text=self.tr("message")).pack(anchor="w", padx=20)
+        message_box = ctk.CTkTextbox(win, height=130)
+        message_box.pack(fill="x", padx=20, pady=6)
+        ctk.CTkLabel(win, text=self.tr("channel_mapping"), wraplength=570).pack(anchor="w", padx=20, pady=(8, 3))
+        channels_box = ctk.CTkTextbox(win, height=120, font=("Consolas", 10))
+        channels_box.pack(fill="x", padx=20, pady=6)
+        def send():
+            message = message_box.get("1.0", "end").strip()
+            if not message:
+                messagebox.showwarning("Broadcast", "Az üzenet nem lehet üres.", parent=win)
+                return
+            channels = {}
+            for line in channels_box.get("1.0", "end").splitlines():
+                if "=" in line:
+                    guild_id, channel_id = [part.strip() for part in line.split("=", 1)]
+                    if guild_id.isdigit() and channel_id.isdigit():
+                        channels[guild_id] = channel_id
+            try:
+                pending = []
+                if os.path.exists(BROADCAST_REQUESTS_FILE):
+                    with open(BROADCAST_REQUESTS_FILE, "r", encoding="utf-8") as request_file:
+                        pending = json.load(request_file)
+                pending.append({"id": uuid.uuid4().hex, "bot": self.active_bot_key, "message": message, "channels": channels})
+                temporary_path = BROADCAST_REQUESTS_FILE + ".tmp"
+                with open(temporary_path, "w", encoding="utf-8") as request_file:
+                    json.dump(pending, request_file, ensure_ascii=False)
+                os.replace(temporary_path, BROADCAST_REQUESTS_FILE)
+                self.append_log("EVENT", "Broadcast várólistára téve a(z) %s bothoz." % self.active_bot_key)
+                messagebox.showinfo("Broadcast", "Az üzenet elküldési várólistára került.", parent=win)
+                win.destroy()
+            except (OSError, json.JSONDecodeError) as error:
+                messagebox.showerror("Broadcast hiba", str(error), parent=win)
+        ctk.CTkButton(win, text=self.tr("send_broadcast"), fg_color="#c0392b", command=send).pack(pady=12)
+
+    def read_bot_metadata(self, bot_key=None):
+        bot = self.bots.get(bot_key or self.active_bot_key, {})
+        script_path = bot.get("path", "")
+        defaults = {"name": bot.get("name", bot_key or self.active_bot_key), "version": "1.0.0", "token": ""}
+        if not script_path:
+            return defaults
+        version_path = os.path.join(os.path.dirname(script_path), "version.py")
+        if not os.path.isfile(version_path):
+            return defaults
+        try:
+            with open(version_path, "r", encoding="utf-8") as version_file:
+                tree = ast.parse(version_file.read(), filename=version_path)
+            for node in tree.body:
+                if isinstance(node, ast.Assign) and len(node.targets) == 1 and isinstance(node.targets[0], ast.Name):
+                    key = node.targets[0].id
+                    if key in ("BOT_NAME", "BOT_VERSION", "BOT_TOKEN"):
+                        value = ast.literal_eval(node.value)
+                        defaults[{"BOT_NAME": "name", "BOT_VERSION": "version", "BOT_TOKEN": "token"}[key]] = str(value)
+        except (OSError, SyntaxError, ValueError):
+            pass
+        return defaults
+
+    def save_bot_metadata(self, name, version, token):
+        old_key = self.active_bot_key
+        bot = self.bots[old_key]
+        name = name.strip() or old_key
+        script_path = bot.get("path", "")
+        if not script_path or not os.path.isfile(script_path):
+            messagebox.showwarning("Hiányzó bot", "Előbb tallózd be a bot.py fájlt.")
+            return
+        bot_dir = os.path.dirname(script_path)
+        with open(os.path.join(bot_dir, "version.py"), "w", encoding="utf-8") as version_file:
+            version_file.write("BOT_NAME = %r\nBOT_VERSION = %r\nBOT_TOKEN = %r\n" % (name, version.strip(), token.strip()))
+        with open(os.path.join(bot_dir, "info.py"), "w", encoding="utf-8") as info_file:
+            info_file.write(INFO_FILE_TEMPLATE)
+        bot["name"] = name
+        if name != old_key:
+            self.rename_bot_key(old_key, name, persist=False)
+        self.save_config()
+        self.switch_bot(self.active_bot_key)
+
+    def rename_bot_key(self, old_key, new_key, persist=True):
+        new_key = new_key.strip()
+        if not new_key or old_key not in self.bots:
+            return False
+        if new_key != old_key and new_key in self.bots:
+            messagebox.showerror(self.tr("error_counter"), self.tr("duplicate_bot"))
+            return False
+        bot = self.bots.pop(old_key)
+        bot["name"] = new_key
+        self.bots[new_key] = bot
+        if self.active_bot_key == old_key:
+            self.active_bot_key = new_key
+        self.render_tabs()
+        if persist:
+            self.save_config()
+        return True
+
+    def open_bot_info_editor(self):
+        metadata = self.read_bot_metadata()
+        win = ctk.CTkToplevel(self)
+        win.title(self.tr("bot_data"))
+        win.geometry("520x360")
+        win.grab_set()
+        fields = []
+        for label, key, show in ((self.tr("bot_name"), "name", None), (self.tr("bot_version"), "version", None), ("Bot Token", "token", "*")):
+            ctk.CTkLabel(win, text=label).pack(anchor="w", padx=24, pady=(14, 3))
+            entry = ctk.CTkEntry(win, show=show, width=430)
+            entry.insert(0, metadata[key])
+            entry.pack(anchor="w", padx=24)
+            fields.append(entry)
+        ctk.CTkLabel(win, text=self.tr("bot_token_warning"), text_color="#e67e22").pack(anchor="w", padx=24, pady=12)
+        def save():
+            self.save_bot_metadata(fields[0].get(), fields[1].get(), fields[2].get())
+            win.destroy()
+        ctk.CTkButton(win, text="Mentés", fg_color="#27ae60", command=save).pack(pady=12)
+
+    def open_activity_editor(self):
+        bot = self.bots[self.active_bot_key]
+        win = ctk.CTkToplevel(self)
+        win.title(self.tr("activity_loop"))
+        win.geometry("720x520")
+        win.grab_set()
+        ctk.CTkLabel(win, text=self.tr("activity_loop"), font=("Arial", 16, "bold")).pack(pady=10)
+        enabled = ctk.CTkSwitch(win, text=self.tr("activity_enabled"))
+        enabled.pack(anchor="w", padx=18, pady=4)
+        if bot.get("activity_enabled", True):
+            enabled.select()
+        interval_frame = ctk.CTkFrame(win, fg_color="transparent")
+        interval_frame.pack(anchor="w", padx=18, pady=4)
+        ctk.CTkLabel(interval_frame, text=self.tr("activity_interval")).pack(side="left", padx=(0, 8))
+        interval_entry = ctk.CTkEntry(interval_frame, width=80)
+        interval_entry.insert(0, str(bot.get("activity_interval_minutes", 5)))
+        interval_entry.pack(side="left")
+        rows_frame = ctk.CTkScrollableFrame(win, height=300)
+        rows_frame.pack(fill="both", expand=True, padx=12, pady=8)
+        rows = []
+        saved_loop = bot.get("activity_loop", []) or []
+        if not saved_loop and bot.get("activity_text", ""):
+            saved_loop = [{"type": bot.get("activity_type", "Playing"), "text": bot.get("activity_text", "")}]
+        if not saved_loop:
+            saved_loop = [{"type": "Playing", "text": ""}]
+
+        def add_row(activity_type="Playing", activity_text=""):
+            row = ctk.CTkFrame(rows_frame, fg_color="transparent")
+            row.pack(fill="x", pady=4)
+            type_var = ctk.StringVar(value=activity_type)
+            ctk.CTkComboBox(row, values=["Playing", "Listening", "Watching", "Streaming"], variable=type_var, width=130).pack(side="left", padx=4)
+            text_entry = ctk.CTkEntry(row, placeholder_text=self.tr("activity_text"))
+            text_entry.insert(0, activity_text)
+            text_entry.pack(side="left", fill="x", expand=True, padx=4)
+            row_data = {"row": row, "type": type_var, "text": text_entry}
+            rows.append(row_data)
+            ctk.CTkButton(row, text=self.tr("remove"), width=32, command=lambda: remove_row(row_data)).pack(side="right", padx=4)
+
+        def remove_row(row_data):
+            if len(rows) <= 1:
+                return
+            rows.remove(row_data)
+            row_data["row"].destroy()
+
+        for item in saved_loop:
+            add_row(item.get("type", "Playing"), item.get("text", ""))
+        ctk.CTkButton(win, text=self.tr("add_activity"), command=add_row).pack(anchor="w", padx=18, pady=4)
+
+        def save():
+            try:
+                interval = max(1, int(interval_entry.get()))
+            except ValueError:
+                messagebox.showwarning("Hiba", "A váltási idő egész szám legyen.", parent=win)
+                return
+            loop = [{"type": item["type"].get(), "text": item["text"].get().strip()} for item in rows if item["text"].get().strip()]
+            bot["activity_enabled"] = bool(enabled.get())
+            bot["activity_interval_minutes"] = interval
+            bot["activity_loop"] = loop
+            if loop:
+                bot["activity_type"], bot["activity_text"] = loop[0]["type"], loop[0]["text"]
+            self.save_config()
+            win.destroy()
+        ctk.CTkButton(win, text="Mentés", fg_color="#27ae60", command=save).pack(pady=10)
+
+    def load_plugins(self):
+        os.makedirs(PLUGINS_DIR, exist_ok=True)
+        self.plugins = []
+        for filename in sorted(os.listdir(PLUGINS_DIR)):
+            if not filename.endswith(".py") or filename.startswith("_"):
+                continue
+            path = os.path.join(PLUGINS_DIR, filename)
+            try:
+                module_name = "panel_plugin_" + os.path.splitext(filename)[0]
+                spec = importlib.util.spec_from_file_location(module_name, path)
+                module = importlib.util.module_from_spec(spec)
+                spec.loader.exec_module(module)
+                if hasattr(module, "setup_panel"):
+                    module.setup_panel(self)
+                self.plugins.append(filename)
+            except Exception as error:
+                self.log_event("ERROR", "Plugin betöltési hiba (%s): %s" % (filename, error))
+
+    def open_plugins_window(self):
+        win = ctk.CTkToplevel(self)
+        win.title(self.tr("plugins"))
+        win.geometry("520x380")
+        ctk.CTkLabel(win, text=self.tr("plugins_help"), wraplength=470).pack(pady=12)
+        box = ctk.CTkTextbox(win, height=180)
+        box.pack(fill="both", expand=True, padx=12, pady=8)
+        box.insert("1.0", "\n".join(self.plugins) or "Nincs betöltött plugin.")
+        box.configure(state="disabled")
+        def create_plugin():
+            os.makedirs(PLUGINS_DIR, exist_ok=True)
+            path = os.path.join(PLUGINS_DIR, "example_plugin.py")
+            if not os.path.exists(path):
+                with open(path, "w", encoding="utf-8") as plugin_file:
+                    plugin_file.write("def setup_panel(panel):\n    panel.log_event('EVENT', 'Example plugin betöltve.')\n")
+            self.load_plugins()
+            win.destroy()
+        ctk.CTkButton(win, text=self.tr("create_plugin"), command=create_plugin).pack(pady=10)
+
+    def install_panel_dependencies(self, output_box):
+        packages = ["customtkinter", "psutil", "matplotlib", "pystray", "Pillow", "pypresence", "discord.py"]
+        requirements_path = os.path.join(SCRIPT_DIR, "requirements.txt")
+        try:
+            with open(requirements_path, "w", encoding="utf-8") as requirements_file:
+                requirements_file.write("\n".join(packages) + "\n")
+            output_box.insert("end", "%s %s\n" % (self.tr("install_started"), ", ".join(packages)))
+            process = subprocess.Popen([sys.executable, "-m", "pip", "install", "-r", requirements_path], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, bufsize=1)
+            def read_install_output():
+                for line in iter(process.stdout.readline, ""):
+                    self.after(0, output_box.insert, "end", line)
+                self.after(0, output_box.insert, "end", "\n%s\n" % self.tr("install_finished"))
+            threading.Thread(target=read_install_output, daemon=True).start()
+        except OSError as error:
+            output_box.insert("end", "%s %s\n" % (self.tr("install_failed"), error))
+
+    def open_alapok_window(self):
+        win = ctk.CTkToplevel(self)
+        win.title(self.tr("integration_title"))
+        win.geometry("780x660")
+        win.grab_set()
+
+        ctk.CTkLabel(win, text=self.tr("integration_help"), font=("Arial", 16, "bold"), text_color="#8e44ad").pack(pady=(12, 5))
+
+        ctk.CTkLabel(win, text=self.tr("integration_info"), justify="left", font=("Arial", 11)).pack(padx=15, anchor="w")
+
+        tabview = ctk.CTkTabview(win, width=740, height=420)
+        tabview.pack(padx=15, pady=10, fill="both", expand=True)
+        
+        tab_botpy = tabview.add(self.tr("integration_bot_template"))
+        tab_vezerlo = tabview.add(self.tr("integration_panel_code"))
+        tab_tutorial = tabview.add(self.tr("integration_tutorial"))
+
+        box_bot = ctk.CTkTextbox(tab_botpy, font=("Consolas", 11), width=710, height=360)
+        box_bot.pack(fill="both", expand=True, padx=5, pady=5)
+        sablon_kod = (
+            "# --- SABLON A SAJÁT BOT.PY FÁJLODHOZ ---\n"
+            "import discord\n"
+            "from discord.ext import commands\n\n"
+            "from version import BOT_NAME, BOT_VERSION, BOT_TOKEN\n"
+            "from info import BOT_INFO\n\n"
+            "CURRENT_PREFIX = \"/\"\n\n"
+            "async def get_prefix(bot, message):\n"
+            "    return CURRENT_PREFIX\n\n"
+            "intents = discord.Intents.default()\n"
+            "intents.message_content = True\n\n"
+            "bot = commands.Bot(command_prefix=get_prefix, intents=intents)\n\n"
+            "@bot.event\n"
+            "async def on_ready():\n"
+            "    print(f'{BOT_NAME} v{BOT_VERSION} bejelentkezve: {bot.user}')\n"
+            "    try:\n"
+            "        await bot.load_extension('Panel')\n"
+            "        await bot.tree.sync()\n"
+            "        print('Panel integráció sikeresen betöltve.')\n"
+            "    except Exception as e:\n"
+            "        print(f'Hiba a vezérlő betöltésekor: {{e}}')\n\n"
+            "@bot.command(name='teszt', aliases=['test'])\n"
+            "async def teszt_parancs(ctx):\n"
+            "    embed = discord.Embed(title=BOT_NAME, description=f'✅ A bot működik! Verzió: {BOT_VERSION}', color=discord.Color.green())\n"
+            "    await ctx.send(embed=embed)\n"
+            "\n"
+            "@bot.command(name='parancsok', aliases=['menu'])\n"
+            "async def parancsok_menu(ctx):\n"
+            "    embed = discord.Embed(title='🤖 Parancsok', color=discord.Color.blue())\n"
+            "    embed.add_field(name='/teszt', value='Bot tesztelése', inline=False)\n"
+            "    embed.add_field(name='/parancsok', value='Ez a menü', inline=False)\n"
+            "    embed.set_footer(text=f'Verzió: {BOT_VERSION}')\n"
+            "    await ctx.send(embed=embed)\n"
+            "\n"
+            "bot.run(BOT_TOKEN)\n"
+        )
+        box_bot.insert("1.0", sablon_kod)
+        box_bot.configure(state="disabled")
+
+        box_vezerlo = ctk.CTkTextbox(tab_vezerlo, font=("Consolas", 11), width=710, height=360)
+        box_vezerlo.pack(fill="both", expand=True, padx=5, pady=5)
+        box_vezerlo.insert("1.0", BOT_VEZERLO_CODE)
+        box_vezerlo.configure(state="disabled")
+
+        ctk.CTkLabel(tab_tutorial, text=self.tr("tutorial_text"), justify="left", anchor="w").pack(fill="x", padx=12, pady=12)
+        dependency_output = ctk.CTkTextbox(tab_tutorial, height=150, font=("Consolas", 10))
+        dependency_output.pack(fill="both", expand=True, padx=12, pady=8)
+        ctk.CTkButton(tab_tutorial, text=self.tr("install_dependencies"), command=lambda: self.install_panel_dependencies(dependency_output)).pack(anchor="w", padx=12, pady=8)
+
+        def save_bot_vezerlo_file():
+            script_path = self.entry_path.get().strip()
+            if not script_path or not os.path.exists(script_path):
+                messagebox.showwarning(self.tr("error_counter"), self.tr("choose_bot_file"), parent=win)
+                return
+            
+            bot_dir = os.path.dirname(script_path)
+            target_path = os.path.join(bot_dir, "bot_vezerlo.py")
+            try:
+                with open(target_path, "w", encoding="utf-8") as target_file:
+                    target_file.write(BOT_VEZERLO_CODE)
+                with open(os.path.join(bot_dir, "version.py"), "a", encoding="utf-8") as version_file:
+                    if os.path.getsize(version_file.name) == 0:
+                        version_file.write(VERSION_FILE_TEMPLATE)
+                with open(os.path.join(bot_dir, "info.py"), "w", encoding="utf-8") as info_file:
+                    info_file.write(INFO_FILE_TEMPLATE)
+                messagebox.showinfo(self.tr("success"), f"{self.tr('saved_controller')}\n{bot_dir}", parent=win)
+            except Exception as e:
+                messagebox.showerror(self.tr("errors"), f"{self.tr('save_failed')}\n{e}", parent=win)
+
+        def save_panel_extension():
+            script_path = self.entry_path.get().strip()
+            if not script_path or not os.path.exists(script_path):
+                messagebox.showwarning(self.tr("error_counter"), self.tr("choose_bot_file"), parent=win)
+                return
+            bot_dir = os.path.dirname(script_path)
+            try:
+                with open(os.path.join(bot_dir, "Panel.py"), "w", encoding="utf-8") as panel_file:
+                    panel_file.write(PANEL_EXTENSION_CODE)
+                messagebox.showinfo(self.tr("success"), f"{self.tr('saved_panel')}\n{bot_dir}", parent=win)
+            except OSError as error:
+                messagebox.showerror(self.tr("errors"), f"{self.tr('save_failed')}\n{error}", parent=win)
+
+        def choose_generation_folder():
+            folder = filedialog.askdirectory(parent=win, title=self.tr("choose_bot_file"))
+            return folder
+
+        def save_generated_files():
+            target_dir = choose_generation_folder()
+            if not target_dir:
+                return
+            try:
+                with open(os.path.join(target_dir, "bot.py"), "w", encoding="utf-8") as target_file:
+                    target_file.write(sablon_kod)
+                with open(os.path.join(target_dir, "bot_vezerlo.py"), "w", encoding="utf-8") as target_file:
+                    target_file.write(BOT_VEZERLO_CODE)
+                with open(os.path.join(target_dir, "Panel.py"), "w", encoding="utf-8") as panel_file:
+                    panel_file.write(PANEL_EXTENSION_CODE)
+                with open(os.path.join(target_dir, "version.py"), "w", encoding="utf-8") as version_file:
+                    version_file.write(VERSION_FILE_TEMPLATE)
+                with open(os.path.join(target_dir, "info.py"), "w", encoding="utf-8") as info_file:
+                    info_file.write(INFO_FILE_TEMPLATE)
+                messagebox.showinfo(self.tr("success"), f"{self.tr('generated_files')}\n{target_dir}", parent=win)
+            except OSError as error:
+                messagebox.showerror(self.tr("errors"), f"{self.tr('generation_failed')}\n{error}", parent=win)
+
+        btn_frame = ctk.CTkFrame(win, fg_color="transparent")
+        btn_frame.pack(fill="x", padx=15, pady=5)
+
+        ctk.CTkButton(btn_frame, text=self.tr("save_controller"), fg_color="#27ae60", hover_color="#2ecc71", command=save_bot_vezerlo_file).pack(side="left", padx=5)
+        self.btn_integrate_panel = ctk.CTkButton(btn_frame, text=self.tr("integrate_panel"), fg_color="#16a085", hover_color="#1abc9c", command=save_panel_extension)
+        self.btn_integrate_panel.pack(side="left", padx=5)
+        ctk.CTkButton(btn_frame, text=self.tr("generate_template"), fg_color="#2980b9", hover_color="#3498db", command=save_generated_files).pack(side="left", padx=5)
+        ctk.CTkButton(btn_frame, text=self.tr("close"), fg_color="#555555", command=win.destroy).pack(side="right", padx=5)
+
+    def create_backup(self, show_message=True):
+        os.makedirs(BACKUP_DIR, exist_ok=True)
+        stamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+        backup_path = os.path.join(BACKUP_DIR, "bot_backup_%s.zip" % stamp)
+        try:
+            with zipfile.ZipFile(backup_path, "w", zipfile.ZIP_DEFLATED) as archive:
+                for panel_file in (BOTS_FILE, SETTINGS_FILE):
+                    if os.path.isfile(panel_file):
+                        archive.write(panel_file, os.path.basename(panel_file))
+                for key, bot in self.bots.items():
+                    script_path = bot.get("path", "")
+                    bot_dir = os.path.dirname(script_path) if script_path else ""
+                    if not bot_dir or not os.path.isdir(bot_dir):
+                        continue
+                    safe_name = "".join(char if char.isalnum() or char in "-_" else "_" for char in key)
+                    for root, _, files in os.walk(bot_dir):
+                        for filename in files:
+                            full_path = os.path.join(root, filename)
+                            relative = os.path.relpath(full_path, bot_dir).replace(os.sep, "/")
+                            if relative == "bot_stats.json" or relative == "bot_config.json" or relative.startswith("data/") or filename.lower().endswith((".json", ".db", ".sqlite", ".sqlite3")):
+                                archive.write(full_path, "bots/%s/%s" % (safe_name, relative))
+            self.backup_last_run = datetime.datetime.now().isoformat(timespec="seconds")
+            self.save_config()
+            if show_message:
+                messagebox.showinfo("Biztonsági mentés", "A mentés elkészült:\n%s" % backup_path)
+            return backup_path
+        except OSError as error:
+            if show_message:
+                messagebox.showerror("Mentési hiba", str(error))
+            return ""
+
+    def check_scheduled_backup(self):
+        should_run = False
+        if self.backup_enabled:
+            if self.backup_on_start and not getattr(self, "startup_backup_done", False):
+                self.startup_backup_done = True
+                should_run = True
+            elif self.backup_last_run:
+                try:
+                    last_run = datetime.datetime.fromisoformat(self.backup_last_run)
+                    should_run = (datetime.datetime.now() - last_run).total_seconds() >= self.backup_interval_hours * 3600
+                except ValueError:
+                    should_run = True
+            elif self.backup_interval_hours > 0:
+                self.backup_last_run = datetime.datetime.now().isoformat(timespec="seconds")
+                self.save_config()
+        if should_run:
+            self.create_backup(show_message=False)
+        self.after(60000, self.check_scheduled_backup)
+
+    def open_backup_manager(self):
+        win = ctk.CTkToplevel(self)
+        win.title(self.tr("backup_title"))
+        win.geometry("720x500")
+        win.grab_set()
+        ctk.CTkLabel(win, text=self.tr("backup_title"), font=("Arial", 16, "bold")).pack(pady=12)
+        listbox = tk.Listbox(win, bg="#202020", fg="white", selectbackground="#2980b9", height=15)
+        listbox.pack(fill="both", expand=True, padx=15, pady=8)
+        os.makedirs(BACKUP_DIR, exist_ok=True)
+
+        def refresh():
+            listbox.delete(0, "end")
+            for filename in sorted(os.listdir(BACKUP_DIR), reverse=True):
+                if filename.lower().endswith(".zip"):
+                    listbox.insert("end", filename)
+
+        def restore():
+            selected = listbox.curselection()
+            if not selected:
+                messagebox.showwarning("Válassz mentést", "Jelölj ki egy ZIP mentést.", parent=win)
+                return
+            archive_path = os.path.join(BACKUP_DIR, listbox.get(selected[0]))
+            if not messagebox.askyesno("Visszaállítás", "A mentés felülírhat meglévő JSON, DB és data fájlokat. Folytatod?", parent=win):
+                return
+            try:
+                with zipfile.ZipFile(archive_path, "r") as archive:
+                    for member in archive.infolist():
+                        target = os.path.abspath(os.path.join(SCRIPT_DIR, member.filename))
+                        if not target.startswith(os.path.abspath(SCRIPT_DIR) + os.sep):
+                            raise ValueError("Érvénytelen mentésútvonal")
+                        if member.filename in ("bots.json", "settings.json"):
+                            archive.extract(member, SCRIPT_DIR)
+                        elif member.filename.startswith("bots/"):
+                            archive.extract(member, SCRIPT_DIR)
+                messagebox.showinfo("Visszaállítás", "A mentés visszaállt. A teljes alkalmazás újraindítása javasolt.", parent=win)
+            except (OSError, zipfile.BadZipFile, ValueError) as error:
+                messagebox.showerror("Visszaállítási hiba", str(error), parent=win)
+
+        buttons = ctk.CTkFrame(win, fg_color="transparent")
+        buttons.pack(fill="x", padx=15, pady=10)
+        ctk.CTkButton(buttons, text=self.tr("backup_new"), command=lambda: (self.create_backup(), refresh())).pack(side="left", padx=4)
+        ctk.CTkButton(buttons, text=self.tr("backup_restore"), fg_color="#d35400", command=restore).pack(side="left", padx=4)
+        ctk.CTkButton(buttons, text=self.tr("refresh"), command=refresh).pack(side="right", padx=4)
+        refresh()
+
+    def open_sqlite_viewer(self):
+        win = ctk.CTkToplevel(self)
+        win.title(self.tr("sqlite_title"))
+        win.geometry("1000x650")
+        win.grab_set()
+        top = ctk.CTkFrame(win, fg_color="transparent")
+        top.pack(fill="x", padx=10, pady=10)
+        path_entry = ctk.CTkEntry(top, placeholder_text=self.tr("sqlite_file"))
+        path_entry.pack(side="left", fill="x", expand=True, padx=4)
+        table_var = ctk.StringVar()
+        table_box = ctk.CTkComboBox(top, variable=table_var, values=[] , width=180)
+        table_box.pack(side="left", padx=4)
+        tree_frame = ctk.CTkFrame(win)
+        tree_frame.pack(fill="both", expand=True, padx=10, pady=4)
+        tree = ttk.Treeview(tree_frame, show="headings")
+        tree.pack(side="left", fill="both", expand=True)
+        ttk.Scrollbar(tree_frame, orient="vertical", command=tree.yview).pack(side="right", fill="y")
+        sql_entry = ctk.CTkEntry(win, placeholder_text=self.tr("quick_sql") + ": SELECT * FROM users LIMIT 100")
+        sql_entry.pack(fill="x", padx=10, pady=6)
+        state = {"connection": None}
+
+        def render_query(query):
+            try:
+                cursor = state["connection"].execute(query)
+                rows = cursor.fetchall()
+                columns = [column[0] for column in cursor.description or []]
+                tree.delete(*tree.get_children())
+                tree["columns"] = columns
+                for column in columns:
+                    tree.heading(column, text=column)
+                    tree.column(column, width=140, anchor="w")
+                for row in rows:
+                    tree.insert("", "end", values=tuple(row))
+            except (sqlite3.Error, AttributeError) as error:
+                messagebox.showerror("SQLite hiba", str(error), parent=win)
+
+        def load_database(path=None):
+            selected_path = path or filedialog.askopenfilename(parent=win, filetypes=[("SQLite adatbázis", "*.db *.sqlite *.sqlite3"), ("Minden fájl", "*.*")])
+            if not selected_path:
+                return
+            try:
+                if state["connection"]:
+                    state["connection"].close()
+                state["connection"] = sqlite3.connect("file:%s?mode=ro" % os.path.abspath(selected_path).replace("\\", "/"), uri=True)
+                path_entry.delete(0, "end")
+                path_entry.insert(0, selected_path)
+                tables = [row[0] for row in state["connection"].execute("SELECT name FROM sqlite_master WHERE type='table' ORDER BY name")]
+                table_box.configure(values=tables)
+                if tables:
+                    table_var.set(tables[0])
+                    render_query('SELECT * FROM "%s" LIMIT 200' % tables[0].replace('"', '""'))
+            except sqlite3.Error as error:
+                messagebox.showerror("SQLite hiba", str(error), parent=win)
+
+        ctk.CTkButton(top, text=self.tr("browse"), width=85, command=load_database).pack(side="left", padx=4)
+        ctk.CTkButton(win, text=self.tr("open_table"), command=lambda: render_query('SELECT * FROM "%s" LIMIT 200' % table_var.get().replace('"', '""'))).pack(side="left", padx=10, pady=4)
+        ctk.CTkButton(win, text=self.tr("run_sql"), command=lambda: render_query(sql_entry.get().strip())).pack(side="left", padx=4, pady=4)
+        win.protocol("WM_DELETE_WINDOW", lambda: (state["connection"] and state["connection"].close(), win.destroy()))
+
+    def open_performance_charts_window(self):
+        if not MATPLOTLIB_AVAILABLE:
+            messagebox.showerror("Hiányzó könyvtár", f"A grafikon nem indítható.\n{MATPLOTLIB_ERROR}\n\nTelepítés: py -m pip install matplotlib")
+            return
+
+        win = ctk.CTkToplevel(self)
+        win.title(self.tr("performance_title"))
+        win.geometry("900x550")
+        win.grab_set()
+
+        bot = self.bots.get(self.active_bot_key)
+        range_var = ctk.StringVar(value="Utolsó 1 óra")
+        control_frame = ctk.CTkFrame(win, fg_color="transparent")
+        control_frame.pack(fill="x", padx=10, pady=(8, 0))
+        ctk.CTkLabel(control_frame, text=self.tr("time_range") + ":").pack(side="left", padx=4)
+        ctk.CTkComboBox(control_frame, variable=range_var, values=["Utolsó 10 perc", "Utolsó 1 óra", "Utolsó 24 óra"], width=150).pack(side="left", padx=4)
+        ctk.CTkButton(control_frame, text=self.tr("save_png"), command=lambda: export_png()).pack(side="right", padx=4)
+
+        def history_for_range():
+            values = {"Utolsó 10 perc": 120, "Utolsó 1 óra": 720, "Utolsó 24 óra": 17280}
+            limit = values[range_var.get()]
+            current_bot = self.bots.get(self.active_bot_key)
+            if not current_bot:
+                return [], [], []
+            return (list(current_bot.get("history_ram", []))[-limit:], list(current_bot.get("history_cpu", []))[-limit:], list(current_bot.get("history_time", []))[-limit:])
+
+        history_ram, history_cpu, history_time = history_for_range()
+
+        fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(8, 4.8), facecolor="#2b2b2b")
+        fig.tight_layout(pad=3.0)
+
+        def style_axis(ax, title, ylabel):
+            ax.set_facecolor("#1e1e1e")
+            ax.set_title(title, color="white", fontsize=11, fontweight="bold")
+            ax.set_ylabel(ylabel, color="white", fontsize=10)
+            ax.tick_params(colors="white", labelsize=9)
+            for spine in ax.spines.values():
+                spine.set_color("#555555")
+            ax.grid(True, color="#444444", linestyle="--", alpha=0.5)
+
+        style_axis(ax1, f"{self.tr('chart_ram')} ({range_var.get()}) - {self.active_bot_key}", "RAM (MB)")
+        style_axis(ax2, f"{self.tr('chart_cpu')} ({range_var.get()}) - {self.active_bot_key}", "CPU (%)")
+
+        line_ram, = ax1.plot(history_time, history_ram, color="#3498db", linewidth=2, marker="o", markersize=3)
+        line_cpu, = ax2.plot(history_time, history_cpu, color="#2ecc71", linewidth=2, marker="o", markersize=3)
+
+        canvas = FigureCanvasTkAgg(fig, master=win)
+        canvas.get_tk_widget().pack(fill="both", expand=True, padx=10, pady=10)
+
+        def refresh_range(*_):
+            h_ram, h_cpu, h_time = history_for_range()
+            line_ram.set_data(h_time, h_ram)
+            line_cpu.set_data(h_time, h_cpu)
+            ax1.set_title(f"{self.tr('chart_ram')} ({range_var.get()}) - {self.active_bot_key}", color="white", fontsize=11, fontweight="bold")
+            ax2.set_title(f"{self.tr('chart_cpu')} ({range_var.get()}) - {self.active_bot_key}", color="white", fontsize=11, fontweight="bold")
+            for axis in (ax1, ax2):
+                axis.relim()
+                axis.autoscale_view()
+            canvas.draw_idle()
+
+        range_var.trace_add("write", refresh_range)
+
+        def export_png():
+            target = filedialog.asksaveasfilename(parent=win, defaultextension=".png", filetypes=[("PNG kép", "*.png")], initialfile="%s_%s.png" % (self.active_bot_key, datetime.datetime.now().strftime("%Y%m%d_%H%M%S")))
+            if target:
+                fig.savefig(target, dpi=160, facecolor=fig.get_facecolor(), bbox_inches="tight")
+                messagebox.showinfo("Export", "A grafikon elmentve:\n%s" % target, parent=win)
+
+        is_active = [True]
+
+        def update_plot():
+            if not is_active[0] or not win.winfo_exists():
+                return
+            b = self.bots.get(self.active_bot_key)
+            if b:
+                h_ram, h_cpu, h_time = history_for_range()
+                line_ram.set_data(h_time, h_ram)
+                line_cpu.set_data(h_time, h_cpu)
+                for ax in (ax1, ax2):
+                    ax.relim()
+                    ax.autoscale_view()
+                canvas.draw_idle()
+            win.after(3000, update_plot)
+
+        win.after(3000, update_plot)
+
+        def on_close():
+            is_active[0] = False
+            win.destroy()
+
+        win.protocol("WM_DELETE_WINDOW", on_close)
+
+    def start_all_bots(self):
+        for key in self.bots:
+            self.switch_bot(key)
+            self.start_bot()
+        self.log_event("SUCCESS", "Összes bot indítási parancs kiadva.")
+        messagebox.showinfo("Bot Vezérlőpult", "Az összes bot elindítási folyamata lefutott!")
+
+    def restart_all_bots(self):
+        for key in self.bots:
+            self.switch_bot(key)
+            self.restart_bot()
+        self.log_event("SUCCESS", "Összes bot újraindítási parancs kiadva.")
+        messagebox.showinfo("Bot Vezérlőpult", "Az összes bot újraindult!")
+
+    def stop_all_bots(self):
+        for key in self.bots:
+            self.switch_bot(key)
+            self.stop_bot()
+        self.log_event("WARNING", "Összes bot leállítási parancs kiadva.")
+        messagebox.showwarning("Bot Vezérlőpult", "Minden futó bot leállítva!")
+
+    def resource_monitor_loop(self):
+        while self.is_monitoring:
+            time.sleep(5)
+            for key, bot in self.bots.items():
+                if bot["is_running"] and bot["process"]:
+                    try:
+                        p = psutil.Process(bot["process"].pid)
+                        mem_mb = p.memory_info().rss / (1024 * 1024)
+                        cpu_p = p.cpu_percent(interval=None)
+
+                        if "history_ram" not in bot:
+                            bot["history_ram"] = []
+                            bot["history_cpu"] = []
+                            bot["history_time"] = []
+
+                        t_str = datetime.datetime.now().strftime("%H:%M:%S")
+                        bot["history_ram"].append(mem_mb)
+                        bot["history_cpu"].append(cpu_p)
+                        bot["history_time"].append(t_str)
+
+                        if len(bot["history_ram"]) > 17280:
+                            bot["history_ram"].pop(0)
+                            bot["history_cpu"].pop(0)
+                            bot["history_time"].pop(0)
+
+                        if mem_mb > self.max_ram_mb:
+                            self.log_event("ERROR", f"A(z) '{key}' bot túllépte a RAM limitet: {mem_mb:.1f} MB / {self.max_ram_mb} MB")
+                            if self.task_kill_enabled:
+                                p.terminate()
+                                bot["is_running"] = False
+                                bot["process"] = None
+                                self.log_event("ERROR", f"A(z) '{key}' bot automatikusan le lett lőve memóriatúllépés miatt.")
+                    except Exception:
+                        pass
+
+    def init_discord_rpc(self):
+        if not RPC_AVAILABLE or not self.rpc_enabled:
+            return
+        
+        def rpc_worker():
+            try:
+                rpc = Presence("123456789012345678") 
+                rpc.connect()
+                while self.rpc_enabled:
+                    rpc.update(
+                        details="Botokat kezel a DBM-ben",
+                        state="DJ Baluss Panel",
+                        large_image="icon",
+                        start=time.time()
+                    )
+                    time.sleep(15)
+            except Exception:
+                pass
+
+        threading.Thread(target=rpc_worker, daemon=True).start()
+
+    def on_volume_change(self):
+        if not self.is_loading:
+            self.save_config()
+
+    def on_test_mode_toggle(self):
+        """Kezeli a teszt mód kapcsoló állapotváltozását és azonnal frissíti a configot."""
+        if not self.is_loading:
+            self.save_config()
+            status_str = "BEKAPCSOLVA" if self.test_mode_var.get() else "KIKAPCSOLVA"
+            self.append_log("EVENT", f"Teszt mód állapota megváltoztatva: {status_str}")
+
+    def on_midnight_toggle(self):
+        if self.midnight_var.get():
+            self.slider_r_days.set(0)
+            self.slider_r_hours.set(0)
+            self.slider_r_mins.set(0)
+            self.lbl_r_days.configure(text="0d")
+            self.lbl_r_hours.configure(text="0h")
+            self.lbl_r_mins.configure(text="0m")
+        if not self.is_loading:
+            self.save_config()
+
+    def on_restart_slider_change(self):
+        d = int(self.slider_r_days.get())
+        h = int(self.slider_r_hours.get())
+        m = int(self.slider_r_mins.get())
+        self.lbl_r_days.configure(text=f"{d}d")
+        self.lbl_r_hours.configure(text=f"{h}h")
+        self.lbl_r_mins.configure(text=f"{m}m")
+        
+        if (d > 0 or h > 0 or m > 0) and self.midnight_var.get():
+            self.midnight_var.set(False)
+
+        if not self.is_loading:
+            self.save_config()
+
+    def update_ui_texts(self):
+        self.title(self.tr("title"))
+        stat_keys = ["bot_name", "bot_version", "uptime", "weekly_uptime", "total_commands", "ram", "cpu", "temperature_pc", "guilds", "users", "error_counter"]
+        for (header, _), key in zip(self.stat_card_headers, stat_keys):
+            icon = header.cget("text").split(" ", 1)[0]
+            header.configure(text=f"{icon} {self.tr(key)}")
+        if self.dual_stat_headers:
+            header, _ = self.dual_stat_headers[0]
+            icon = header.cget("text").split(" ", 1)[0]
+            header.configure(text=f"{icon} {self.tr('ping')}")
+        self._refresh_stat_section_labels()
+        self.btn_dashboard.configure(text=self.tr("dashboard"))
+        self.btn_start.configure(text=self.tr("start"))
+        self.btn_restart.configure(text=self.tr("restart"))
+        self.btn_stop.configure(text=self.tr("stop"))
+        self.btn_settings.configure(text=self.tr("settings"))
+        self.btn_global_stats.configure(text=self.tr("global_stats"))
+        self.btn_broadcast.configure(text=self.tr("broadcast")) if hasattr(self, "btn_broadcast") else None
+        self.btn_servers.configure(text=self.tr("servers"))
+        self.lbl_panel_id.configure(text=f"{self.tr('panel_id')}: {PANEL_ID}")
+        self.btn_copy_connect.configure(text=self.tr("connect_command"))
+        self.btn_integrate_panel.configure(text=self.tr("integrate_panel")) if hasattr(self, "btn_integrate_panel") else None
+        self.btn_bot_info.configure(text=self.tr("bot_data"))
+        self.btn_start_all.configure(text=self.tr("start_all"))
+        self.btn_restart_all.configure(text=self.tr("restart_all"))
+        self.btn_stop_all.configure(text=self.tr("stop_all"))
+        self.btn_alapok.configure(text=self.tr("integration"))
+        self.btn_invite.configure(text=self.tr("invite"))
+        self.btn_backup.configure(text=self.tr("backups"))
+        self.btn_sqlite.configure(text=self.tr("sqlite_viewer"))
+        self.btn_plugins.configure(text=self.tr("plugins"))
+        self.entry_path.configure(placeholder_text=self.tr("browse_placeholder"))
+        self.btn_activity.configure(text=self.tr("activity"))
+        self.lbl_path_title.configure(text=self.tr("bot_script"))
+        self.btn_save_path.configure(text=self.tr("save"))
+        self.btn_browse.configure(text=self.tr("browse"))
+        self.chk_autostart.configure(text=self.tr("autostart"))
+        self.chk_sound.configure(text=self.tr("error_sound"))
+        self.chk_test_mode.configure(text=self.tr("test_mode"))
+        self.chk_midnight.configure(text=self.tr("midnight_restart"))
+        self.lbl_logs_title.configure(text=self.tr("live_logs"))
+        self.btn_filter_all.configure(text=self.tr("all"))
+        self.btn_filter_errors.configure(text=self.tr("errors"))
+        self.btn_filter_success.configure(text=self.tr("success"))
+        self.btn_filter_events.configure(text=self.tr("events"))
+        self.search_entry.configure(placeholder_text=self.tr("search_placeholder"))
+        self.btn_clear.configure(text=self.tr("clear"))
+        self.chk_autoscroll.configure(text=self.tr("autoscroll"))
+        self.btn_open_charts.configure(text=self.tr("open_charts"))
+        self.check_env_file()
+
+    def _refresh_stat_section_labels(self):
+        if hasattr(self, "stats_section_labels"):
+            for label, key in self.stats_section_labels:
+                label.configure(text=self.tr(key))
+
+    def check_and_run_autostarts(self):
+        for key, bot in self.bots.items():
+            if bot["autostart"] and bot["path"] and os.path.exists(bot["path"]):
+                if not bot["is_running"]:
+                    try:
+                        script_path = bot["path"]
+                        bot_dir = os.path.dirname(script_path)
+                        python_exe = sys.executable.lower().replace("pythonw.exe", "python.exe")
+                        env = os.environ.copy()
+                        env["PYTHONUNBUFFERED"] = "1"
+                        creationflags = subprocess.CREATE_NO_WINDOW if os.name == 'nt' else 0
+
+                        bot["process"] = subprocess.Popen(
+                            [python_exe, script_path], cwd=bot_dir, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, bufsize=1, env=env, creationflags=creationflags
+                        )
+                        bot["is_running"] = True
+                        bot["start_time"] = time.time()
+                        
+                        if key == self.active_bot_key:
+                            self.lbl_status.configure(text=self.tr("online"), text_color="#2ecc71")
+                        
+                        self.append_log_to_bot(key, "SUCCESS", f"Auto-start folyamat elindítva (PID: {bot['process'].pid})")
+                        threading.Thread(target=self._read_bot_output, args=(key,), daemon=True).start()
+                    except Exception as e:
+                        self.append_log_to_bot(key, "ERROR", f"Auto-start indítási hiba: {e}")
+
+    def check_auto_restarts(self):
+        bot = self.bots.get(self.active_bot_key)
+        if bot and bot["is_running"] and bot["start_time"]:
+            if bot["midnight_restart"]:
+                now = datetime.datetime.now()
+                if now.hour == 0 and now.minute == 0 and now.second < 2:
+                    self.append_log("EVENT", "Éjféli (Midnight) újraindítás időzítő elértve. Újraindítás...")
+                    self.restart_bot()
+                    return
+
+            total_seconds_limit = (bot["restart_days"] * 86400) + (bot["restart_hours"] * 3600) + (bot["restart_mins"] * 60)
+            if total_seconds_limit > 0:
+                elapsed = time.time() - bot["start_time"]
+                if elapsed >= total_seconds_limit:
+                    self.append_log("EVENT", "Auto-restart időzítő lejárt. Újraindítás...")
+                    self.restart_bot()
+
+    def play_error_sound(self):
+        if not self.sound_var.get():
+            return
+        try:
+            bot = self.bots.get(self.active_bot_key, {})
+            vol = bot.get("volume", 50)
+            if vol > 0:
+                if self.selected_error_sound == "Alap (Beep)":
+                    winsound.Beep(1000, 200)
+                elif self.selected_error_sound == "Dupla Pittyogás":
+                    winsound.Beep(1200, 100)
+                    time.sleep(0.05)
+                    winsound.Beep(1200, 100)
+                else:
+                    winsound.Beep(400, 350)
+        except Exception:
+            pass
+
+    def create_bot_data(self, name, path=""):
+        return {
+            "name": name,
+            "path": path,
+            "autostart": False,
+            "test_mode": False,
+            "restart_days": 0,
+            "restart_hours": 0,
+            "restart_mins": 0,
+            "midnight_restart": False,
+            "error_sound": False,
+            "volume": 50,
+            "raw_logs": [],
+            "is_running": False,
+            "process": None,
+            "start_time": None,
+            "error_count": 0,
+            "total_commands": 0,
+            "allowed_discord_ids": [],
+            "weekly_uptime_seconds": 0,
+            "history_ram": [],
+            "history_cpu": [],
+            "history_time": [],
+            "auto_restart_on_crash": False,
+            "crash_restart_delay": 10,
+            "manual_stop": False,
+            "activity_enabled": True,
+            "activity_type": "Playing",
+            "activity_text": "",
+            "activity_interval_minutes": 5,
+            "activity_loop": [],
+        }
+
+    def render_tabs(self):
+        for child in self.tab_buttons_frame.winfo_children():
+            child.destroy()
+        
+        for i, key in enumerate(self.bots):
+            color = self.theme_colors["accent"] if key == self.active_bot_key else self.theme_colors["sidebar_bg"]
+            is_first = (i == 0)
+            btn_text = key if (is_first or len(self.bots) <= 1) else f"{key}  ✕"
+
+            btn = ctk.CTkButton(
+                self.tab_buttons_frame, 
+                text=btn_text, 
+                width=120, 
+                fg_color=color,
+                command=lambda k=key: self.switch_bot(k)
+            )
+            btn.bind("<Button-3>", lambda e, k=key, first=is_first: self.show_tab_context_menu(e, k, first))
+            btn.pack(side="left", padx=5, pady=5)
+
+    def show_tab_context_menu(self, event, key, is_first):
+        menu = tk.Menu(self, tearoff=0)
+        menu.add_command(label="✏️ Átnevezés (Rename)", command=lambda: self.rename_bot(key))
+        if not is_first and len(self.bots) > 1:
+            menu.add_command(label="🗑️ Törlés (Delete)", command=lambda: self.delete_bot(key))
+        try:
+            menu.tk_popup(event.x_root, event.y_root)
+        finally:
+            menu.grab_release()
+
+    def rename_bot(self, key):
+        new_name = simpledialog.askstring(self.tr("rename"), f"{self.tr('new_bot_prompt')} ({key}):", initialvalue=key)
+        if new_name:
+            new_name = new_name.strip()
+            if not new_name or new_name in self.bots:
+                messagebox.showerror(self.tr("error"), self.tr("duplicate_bot"))
+                return
+            
+            if not self.rename_bot_key(key, new_name, persist=False):
+                return
+            bot = self.bots[new_name]
+            metadata = self.read_bot_metadata(new_name)
+            script_path = bot.get("path", "")
+            if script_path and os.path.isfile(script_path):
+                with open(os.path.join(os.path.dirname(script_path), "version.py"), "w", encoding="utf-8") as version_file:
+                    version_file.write("BOT_NAME = %r\nBOT_VERSION = %r\nBOT_TOKEN = %r\n" % (new_name, metadata["version"], metadata["token"]))
+            self.save_config()
+            self.switch_bot(self.active_bot_key)
+
+    def delete_bot(self, key):
+        keys_list = list(self.bots.keys())
+        if keys_list and keys_list[0] == key:
+            messagebox.showwarning("Figyelem", "Az alapértelmezett (fő) bot nem törölhető!")
+            return
+        if len(self.bots) <= 1:
+            messagebox.showwarning("Figyelem", "Az utolsó botot nem törölheted!")
+            return
+        if messagebox.askyesno("Megerősítés", f"Biztosan törölni akarod a(z) '{key}' botot?"):
+            if self.bots[key]["is_running"]:
+                try:
+                    self.bots[key]["process"].terminate()
+                except Exception:
+                    pass
+            del self.bots[key]
+            if self.active_bot_key == key:
+                self.active_bot_key = list(self.bots.keys())[0]
+            self.switch_bot(self.active_bot_key)
+            self.save_config()
+            self.render_tabs()
+
+    def check_env_file(self):
+        script_path = self.entry_path.get().strip()
+        if script_path and os.path.exists(script_path):
+            bot_dir = os.path.dirname(script_path)
+            if os.path.exists(os.path.join(bot_dir, ".env")):
+                self.lbl_env_status.configure(text=self.tr("env_ok"), text_color="#2ecc71")
+                return
+        self.lbl_env_status.configure(text=self.tr("env_missing"), text_color="#e74c3c")
+
+    def switch_bot(self, key):
+        if key not in self.bots:
+            return
+        
+        if not self.is_loading:
+            if self.active_bot_key in self.bots:
+                current_text = self.entry_path.get().strip()
+                if current_text and current_text != "Tallózd be a fő .py fájlt...":
+                    self.bots[self.active_bot_key]["path"] = current_text
+                self.bots[self.active_bot_key]["autostart"] = self.autostart_var.get()
+                self.bots[self.active_bot_key]["test_mode"] = self.test_mode_var.get()
+                self.bots[self.active_bot_key]["restart_days"] = int(self.slider_r_days.get())
+                self.bots[self.active_bot_key]["restart_hours"] = int(self.slider_r_hours.get())
+                self.bots[self.active_bot_key]["restart_mins"] = int(self.slider_r_mins.get())
+                self.bots[self.active_bot_key]["midnight_restart"] = self.midnight_var.get()
+                self.bots[self.active_bot_key]["error_sound"] = self.sound_var.get()
+                self.bots[self.active_bot_key]["volume"] = int(self.slider_volume.get())
+
+        self.active_bot_key = key
+        bot = self.bots[key]
+
+        self.entry_path.delete(0, "end")
+        if bot["path"]:
+            self.entry_path.insert(0, bot["path"])
+        
+        self.autostart_var.set(bot["autostart"])
+        self.test_mode_var.set(bot.get("test_mode", False))
+        self.slider_r_days.set(bot["restart_days"])
+        self.slider_r_hours.set(bot["restart_hours"])
+        self.slider_r_mins.set(bot["restart_mins"])
+        self.lbl_r_days.configure(text=f"{bot['restart_days']}d")
+        self.lbl_r_hours.configure(text=f"{bot['restart_hours']}h")
+        self.lbl_r_mins.configure(text=f"{bot['restart_mins']}m")
+
+        self.midnight_var.set(bot.get("midnight_restart", False))
+        self.sound_var.set(bot["error_sound"])
+        self.slider_volume.set(bot.get("volume", 50))
+        
+        self.check_env_file()
+        metadata = self.read_bot_metadata(key)
+        self.lbl_bot_name.configure(text=metadata["name"])
+        self.lbl_bot_version.configure(text=metadata["version"])
+
+        if bot["is_running"]:
+            self.lbl_status.configure(text=self.tr("online"), text_color="#2ecc71")
+        else:
+            self.lbl_status.configure(text=self.tr("offline"), text_color="#e74c3c")
+
+        self.lbl_errors.configure(text=str(bot["error_count"]))
+        self.lbl_commands.configure(text=str(bot["total_commands"]) if bot["path"] and os.path.exists(bot["path"]) else "0")
+        
+        w_hours = bot["weekly_uptime_seconds"] // 3600
+        w_mins = (bot["weekly_uptime_seconds"] % 3600) // 60
+        self.lbl_weekly_uptime.configure(text=f"{w_hours}h {w_mins}m")
+
+        self.search_entry.delete(0, "end")
+        self.refresh_log_display()
+        if not self.is_loading:
+            self.render_tabs()
+
+    def add_bot_dialog(self):
+        bot_name = simpledialog.askstring(self.tr("new_bot"), self.tr("new_bot_prompt"))
+        if bot_name:
+            bot_name = bot_name.strip()
+            if bot_name in self.bots:
+                messagebox.showerror(self.tr("error_counter"), self.tr("duplicate_bot"))
+                return
+            self.bots[bot_name] = self.create_bot_data(bot_name)
+            self.switch_bot(bot_name)
+            self.save_config()
+            self.render_tabs()
+
+    def open_settings_window_v2(self):
+        win = ctk.CTkToplevel(self)
+        win.title(self.tr("settings"))
+        win.geometry("560x620")
+        win.grab_set()
+
+        tabs = ctk.CTkTabview(win)
+        tabs.pack(fill="both", expand=True, padx=12, pady=12)
+        panel_tab = tabs.add(self.tr("panel_settings"))
+        bot_tab = tabs.add(self.tr("bot_settings"))
+
+        ctk.CTkLabel(panel_tab, text=self.tr("panel_settings"), font=("Arial", 17, "bold")).pack(pady=(12, 8))
+        ctk.CTkLabel(panel_tab, text=f"{self.tr('panel_id')}: {PANEL_ID}").pack(anchor="w", padx=20, pady=5)
+        ctk.CTkLabel(panel_tab, text="Panel password (empty = disabled)").pack(anchor="w", padx=20, pady=(10, 2))
+        password_entry = ctk.CTkEntry(panel_tab, show="*", width=280, placeholder_text="Password")
+        if self.panel_password:
+            password_entry.insert(0, self.panel_password)
+        password_entry.pack(anchor="w", padx=20)
+        ctk.CTkLabel(panel_tab, text=self.tr("language")).pack(anchor="w", padx=20, pady=(12, 2))
+        language_var = ctk.StringVar(value=self.current_language)
+        ctk.CTkComboBox(panel_tab, values=["English", "Magyar"], variable=language_var, width=280, command=self.apply_language).pack(anchor="w", padx=20)
+        tray_switch = ctk.CTkSwitch(panel_tab, text=self.tr("minimize_tray"))
+        tray_switch.pack(anchor="w", padx=20, pady=12)
+        if self.minimize_to_tray_enabled:
+            tray_switch.select()
+        rpc_switch = ctk.CTkSwitch(panel_tab, text=self.tr("rpc"))
+        rpc_switch.pack(anchor="w", padx=20, pady=5)
+        if self.rpc_enabled:
+            rpc_switch.select()
+        ctk.CTkLabel(panel_tab, text=self.tr("log_level")).pack(anchor="w", padx=20, pady=(12, 2))
+        log_var = ctk.StringVar(value=self.log_save_level)
+        ctk.CTkComboBox(panel_tab, values=["Mindent mentse", "Csak hibák", "Csak események", "Sikeres interakciók"], variable=log_var, width=280).pack(anchor="w", padx=20)
+
+        backup_enabled_switch = ctk.CTkSwitch(panel_tab, text=self.tr("backup_auto"))
+        backup_enabled_switch.pack(anchor="w", padx=20, pady=(14, 4))
+        if self.backup_enabled:
+            backup_enabled_switch.select()
+        backup_start_switch = ctk.CTkSwitch(panel_tab, text=self.tr("backup_start"))
+        backup_start_switch.pack(anchor="w", padx=20, pady=4)
+        if self.backup_on_start:
+            backup_start_switch.select()
+        ctk.CTkLabel(panel_tab, text=self.tr("backup_interval")).pack(anchor="w", padx=20, pady=(8, 2))
+        backup_interval_entry = ctk.CTkEntry(panel_tab, width=100)
+        backup_interval_entry.insert(0, str(self.backup_interval_hours))
+        backup_interval_entry.pack(anchor="w", padx=20)
+        ctk.CTkButton(panel_tab, text=self.tr("backup_manager"), command=self.open_backup_manager).pack(anchor="w", padx=20, pady=10)
+
+        bot = self.bots[self.active_bot_key]
+        ctk.CTkLabel(bot_tab, text=f"{self.tr('bot_settings')}: {self.active_bot_key}", font=("Arial", 17, "bold")).pack(pady=(12, 8))
+        ctk.CTkLabel(bot_tab, text=self.tr("max_ram")).pack(anchor="w", padx=20, pady=(8, 2))
+        ram_entry = ctk.CTkEntry(bot_tab, width=180)
+        ram_entry.insert(0, str(self.max_ram_mb))
+        ram_entry.pack(anchor="w", padx=20)
+        test_switch = ctk.CTkSwitch(bot_tab, text=self.tr("test_mode"))
+        test_switch.pack(anchor="w", padx=20, pady=12)
+        if bot.get("test_mode", False):
+            test_switch.select()
+        ctk.CTkLabel(bot_tab, text=self.tr("testers")).pack(anchor="w", padx=20, pady=(8, 2))
+        testers_entry = ctk.CTkEntry(bot_tab, width=420, placeholder_text="123456789012345678, 987654321098765432")
+        testers_entry.insert(0, ", ".join(str(value) for value in bot.get("allowed_discord_ids", [])))
+        testers_entry.pack(anchor="w", padx=20)
+        ctk.CTkLabel(bot_tab, text=self.tr("testers_help"), text_color="#aaaaaa").pack(anchor="w", padx=20, pady=5)
+        crash_switch = ctk.CTkSwitch(bot_tab, text=self.tr("crash_restart"))
+        crash_switch.pack(anchor="w", padx=20, pady=(12, 4))
+        if bot.get("auto_restart_on_crash", False):
+            crash_switch.select()
+        ctk.CTkLabel(bot_tab, text=self.tr("crash_delay")).pack(anchor="w", padx=20, pady=(6, 2))
+        crash_delay_entry = ctk.CTkEntry(bot_tab, width=100)
+        crash_delay_entry.insert(0, str(bot.get("crash_restart_delay", 10)))
+        crash_delay_entry.pack(anchor="w", padx=20)
+
+        def save_settings():
+            self.current_language = language_var.get()
+            self.panel_password = password_entry.get().strip()
+            self.minimize_to_tray_enabled = bool(tray_switch.get())
+            self.rpc_enabled = bool(rpc_switch.get())
+            self.log_save_level = log_var.get()
+            self.backup_enabled = bool(backup_enabled_switch.get())
+            self.backup_on_start = bool(backup_start_switch.get())
+            try:
+                self.backup_interval_hours = max(0, int(backup_interval_entry.get()))
+            except ValueError:
+                messagebox.showwarning("Hiba", "A backup gyakorisága egész szám legyen.", parent=win)
+                return
+            bot["test_mode"] = bool(test_switch.get())
+            bot["auto_restart_on_crash"] = bool(crash_switch.get())
+            try:
+                bot["crash_restart_delay"] = max(1, int(crash_delay_entry.get()))
+            except ValueError:
+                messagebox.showwarning("Hiba", "A crash várakozási idő egész szám legyen.", parent=win)
+                return
+            bot["allowed_discord_ids"] = [value.strip() for value in testers_entry.get().split(",") if value.strip().isdigit()]
+            try:
+                self.max_ram_mb = max(50, int(ram_entry.get()))
+            except ValueError:
+                messagebox.showwarning("Hiba", "A RAM értéke egész szám legyen.", parent=win)
+                return
+            self.save_config()
+            self.switch_bot(self.active_bot_key)
+            self.update_ui_texts()
+            win.destroy()
+
+        ctk.CTkButton(win, text=self.tr("save"), command=save_settings, fg_color="#27ae60").pack(pady=(0, 12))
+
+    def open_settings_window(self):
+        win = ctk.CTkToplevel(self)
+        win.title(self.tr("settings"))
+        win.geometry("480x720")
+        win.grab_set()
+
+        ctk.CTkLabel(win, text=self.tr("panel_settings"), font=("Arial", 16, "bold")).pack(pady=15)
+        
+        chk_tray = ctk.CTkSwitch(win, text=self.tr("minimize_tray"))
+        chk_tray.pack(pady=5)
+        if self.minimize_to_tray_enabled:
+            chk_tray.select()
+
+        ctk.CTkLabel(win, text=self.tr("password_label"), font=("Arial", 11, "bold")).pack(pady=(10, 2))
+        pwd_entry = ctk.CTkEntry(win, show="*", width=260, placeholder_text=self.tr("new_password"))
+        pwd_entry.pack(pady=2)
+        if self.panel_password:
+            pwd_entry.insert(0, self.panel_password)
+
+        ctk.CTkLabel(win, text=self.tr("log_level"), font=("Arial", 12, "bold")).pack(pady=(10, 2))
+        log_lvl_var = ctk.StringVar(value=self.log_save_level)
+        ctk.CTkComboBox(win, values=["Mindent mentse", "Csak hibák", "Csak események", "Sikeres interakciók"], variable=log_lvl_var, width=260).pack(pady=2)
+
+        ctk.CTkLabel(win, text=self.tr("max_ram"), font=("Arial", 12, "bold")).pack(pady=(10, 2))
+        ram_spin = ctk.CTkSpinbox(win, from_=50, to=2048, increment=50, width=150) if hasattr(ctk, "CTkSpinbox") else ctk.CTkEntry(win, width=150)
+        if hasattr(ram_spin, "set"):
+            ram_spin.set(self.max_ram_mb)
+        else:
+            ram_spin.insert(0, str(self.max_ram_mb))
+        ram_spin.pack(pady=2)
+
+        chk_task_kill = ctk.CTkSwitch(win, text=self.tr("task_kill"))
+        chk_task_kill.pack(pady=5)
+        if self.task_kill_enabled:
+            chk_task_kill.select()
+
+        chk_rpc = ctk.CTkSwitch(win, text=self.tr("rpc"))
+        chk_rpc.pack(pady=5)
+        if self.rpc_enabled:
+            chk_rpc.select()
+
+        ctk.CTkLabel(win, text=self.tr("language"), font=("Arial", 12, "bold")).pack(pady=(10, 2))
+        lang_var = ctk.StringVar(value=self.current_language)
+        ctk.CTkComboBox(win, values=["English", "Magyar"], variable=lang_var, width=260, command=self.apply_language).pack(pady=2)
+
+        ctk.CTkLabel(win, text=self.tr("error_sound"), font=("Arial", 12, "bold")).pack(pady=(10, 2))
+        sound_var = ctk.StringVar(value=self.selected_error_sound)
+        ctk.CTkComboBox(win, values=["Alap (Beep)", "Dupla Pittyogás", "Mély Hiba (Buzz)"], variable=sound_var, width=260).pack(pady=2)
+
+        ctk.CTkLabel(win, text=self.tr("theme"), font=("Arial", 12, "bold")).pack(pady=(10, 2))
+        theme_var = ctk.StringVar(value=self.current_theme)
+        ctk.CTkComboBox(win, values=["Discord Sötét (Alap)", "Discord Világos", "Discord Blurple (Lila-Kék)", "Discord Zöld (Hacker)"], variable=theme_var, width=260).pack(pady=2)
+
+        def save_and_close():
+            self.minimize_to_tray_enabled = bool(chk_tray.get())
+            self.panel_password = pwd_entry.get().strip()
+            self.current_language = lang_var.get()
+            self.selected_error_sound = sound_var.get()
+            self.log_save_level = log_lvl_var.get()
+            self.task_kill_enabled = bool(chk_task_kill.get())
+            self.rpc_enabled = bool(chk_rpc.get())
+            
+            try:
+                if hasattr(ram_spin, "get"):
+                    self.max_ram_mb = int(ram_spin.get())
+                else:
+                    self.max_ram_mb = int(ram_spin.get())
+            except Exception:
+                pass
+
+            selected_t = theme_var.get()
+            if selected_t != self.current_theme:
+                self.apply_theme_setting(selected_t)
+
+            self.save_config()
+            self.update_ui_texts()
+            win.destroy()
+
+        ctk.CTkButton(win, text="Mentés & Bezárás", command=save_and_close, fg_color="#27ae60").pack(pady=15)
+
+    def open_global_stats_window(self):
+        win = ctk.CTkToplevel(self)
+        win.title(self.tr("global_stats_title"))
+        win.geometry("950x650")
+        win.grab_set()
+        tabs = ctk.CTkTabview(win)
+        tabs.pack(fill="both", expand=True, padx=12, pady=12)
+        overview_tab = tabs.add(self.tr("global_stats"))
+        commands_tab = tabs.add(self.tr("command_stats"))
+        ctk.CTkLabel(overview_tab, text=self.tr("global_stats_title"), font=("Arial", 18, "bold"), text_color="#3498db").pack(pady=15)
+        scroll_frame = ctk.CTkScrollableFrame(overview_tab)
+        scroll_frame.pack(fill="both", expand=True, padx=15, pady=(0, 15))
+
+        for k, bot in self.bots.items():
+            card = ctk.CTkFrame(scroll_frame, fg_color=self.theme_colors["card_bg"])
+            card.pack(fill="x", padx=5, pady=4)
+            status_text = self.tr("online") if bot["is_running"] else self.tr("offline")
+            ctk.CTkLabel(card, text=f"🤖 {k} | {status_text} | {self.tr('total_commands')}: {bot['total_commands']} | {self.tr('errors')}: {bot['error_count']}", font=("Consolas", 12), text_color=self.theme_colors["text"]).pack(anchor="w", padx=10, pady=10)
+
+        daily, popular = self.get_command_usage_stats()
+        ctk.CTkLabel(commands_tab, text=self.tr("daily_commands"), font=("Arial", 14, "bold")).pack(anchor="w", padx=12, pady=(12, 4))
+        daily_box = ctk.CTkTextbox(commands_tab, height=170)
+        daily_box.pack(fill="x", padx=12, pady=5)
+        daily_lines = ["%s: %s" % (day, count) for day, count in sorted(daily.items())]
+        daily_box.insert("1.0", "\n".join(daily_lines) or self.tr("no_command_data"))
+        daily_box.configure(state="disabled")
+        ctk.CTkLabel(commands_tab, text=self.tr("popular_commands"), font=("Arial", 14, "bold")).pack(anchor="w", padx=12, pady=(12, 4))
+        popular_box = ctk.CTkTextbox(commands_tab, height=170)
+        popular_box.pack(fill="both", expand=True, padx=12, pady=5)
+        popular_lines = ["%s: %s" % (command, count) for command, count in popular.most_common()]
+        popular_box.insert("1.0", "\n".join(popular_lines) or self.tr("no_command_data"))
+        popular_box.configure(state="disabled")
+
+    def get_command_usage_stats(self):
+        daily = {}
+        popular = {}
+        for bot in self.bots.values():
+            for entry in bot.get("raw_logs", []):
+                message = entry.get("msg", "")
+                lowered = message.lower()
+                if "command" not in lowered and "parancs" not in lowered and not re.search(r"(?:^|\s)/[a-zA-Z0-9_-]+", message):
+                    continue
+                date_key = entry.get("date", datetime.datetime.now().strftime("%Y-%m-%d"))
+                daily[date_key] = daily.get(date_key, 0) + 1
+                match = re.search(r"(?:command|parancs)\s*[:=]?\s*([/a-zA-Z0-9_-]+)", message, re.IGNORECASE)
+                command_name = match.group(1) if match else (re.search(r"(/[a-zA-Z0-9_-]+)", message).group(1) if re.search(r"(/[a-zA-Z0-9_-]+)", message) else "unknown")
+                popular[command_name] = popular.get(command_name, 0) + 1
+        from collections import Counter
+        return daily, Counter(popular)
+
+    def open_servers_window(self):
+        script_path = self.entry_path.get()
+        if not script_path or not os.path.exists(script_path):
+            messagebox.showwarning("Figyelem", "Előbb tallózd be a bot érvényes .py fájlját!")
+            return
+        
+        servers_dir = os.path.join(os.path.dirname(script_path), "data", "servers")
+        win = ctk.CTkToplevel(self)
+        win.title(self.tr("server_settings"))
+        win.geometry("750x500")
+        win.grab_set()
+
+        ctk.CTkLabel(win, text=self.tr("server_settings"), font=("Arial", 16, "bold"), text_color="#16a085").pack(pady=15)
+
+        if not os.path.exists(servers_dir):
+            ctk.CTkLabel(win, text=f"Nem található 'data/servers' mappa:\n{servers_dir}", font=("Arial", 12)).pack(pady=30)
+            return
+
+        json_files = [f for f in os.listdir(servers_dir) if f.endswith(".json")]
+        
+        if not json_files:
+            ctk.CTkLabel(win, text=self.tr("no_servers"), font=("Arial", 12)).pack(pady=30)
+            return
+
+        scroll_f = ctk.CTkScrollableFrame(win, width=700, height=350)
+        scroll_f.pack(padx=20, pady=10, fill="both", expand=True)
+
+        for filename in json_files:
+            file_path = os.path.join(servers_dir, filename)
+            
+            try:
+                with open(file_path, "r", encoding="utf-8") as f:
+                    s_data = json.load(f)
+            except Exception:
+                s_data = {"error": "Nem olvasható JSON"}
+
+            server_name = s_data.get("server_name", s_data.get("name", "Ismeretlen Szerver"))
+            member_count = s_data.get("member_count", 0)
+            guild_id = s_data.get("guild_id", s_data.get("server_id", "ismeretlen"))
+
+            card = ctk.CTkFrame(scroll_f, fg_color=self.theme_colors["card_bg"])
+            card.pack(fill="x", padx=5, pady=5)
+
+            info_text = f"{server_name} | ID: {guild_id} | Tagok: {member_count} | Verzió: {s_data.get('version', 'ismeretlen')}"
+            ctk.CTkLabel(card, text=info_text, font=("Consolas", 11), text_color=self.theme_colors["text"]).pack(side="left", padx=10, pady=10)
+
+            def open_json_editor(fp=file_path, s_name=server_name):
+                ed_win = ctk.CTkToplevel(win)
+                ed_win.edit_file_path = fp
+                ed_win.title(f"Szerver Szerkesztése: {s_name}")
+                ed_win.geometry("500x400")
+                ed_win.grab_set()
+
+                ctk.CTkLabel(ed_win, text=f"Szerver: {s_name}", font=("Arial", 12, "bold")).pack(pady=10)
+                
+                txt_box = ctk.CTkTextbox(ed_win, font=("Consolas", 11), width=460, height=260)
+                txt_box.pack(padx=20, pady=5)
+                
+                try:
+                    with open(fp, "r", encoding="utf-8") as f:
+                        content_str = f.read()
+                    txt_box.insert("1.0", content_str)
+                except Exception as e:
+                    txt_box.insert("1.0", f"Hiba a fájl olvasásakor: {e}")
+
+                def save_json_file():
+                    try:
+                        new_content = txt_box.get("1.0", "end").strip()
+                        json.loads(new_content)
+                        with open(ed_win.edit_file_path, "w", encoding="utf-8") as f:
+                            f.write(new_content)
+                        messagebox.showinfo("Siker", "Szerver konfiguráció sikeresen mentve!", parent=ed_win)
+                        ed_win.destroy()
+                    except json.JSONDecodeError as err:
+                        messagebox.showerror("JSON Hiba", f"Érvénytelen JSON formátum:\n{err}", parent=ed_win)
+                    except Exception as err:
+                        messagebox.showerror("Hiba", f"Nem sikerült menteni a fájlt:\n{err}", parent=ed_win)
+
+                ctk.CTkButton(ed_win, text="Mentés", fg_color="#27ae60", command=save_json_file).pack(pady=10)
+
+            ctk.CTkButton(card, text="Szerkesztés", width=90, fg_color="#16a085", command=open_json_editor).pack(side="right", padx=10, pady=10)
+
+    def manual_save_path(self):
+        path_val = self.entry_path.get().strip()
+        if path_val and path_val != "Tallózd be a fő .py fájlt...":
+            if not os.path.exists(path_val):
+                messagebox.showerror("Hiba", f"A megadott fájl nem létezik:\n{path_val}")
+                return
+            self.bots[self.active_bot_key]["path"] = path_val
+
+        if self.active_bot_key in self.bots:
+            self.bots[self.active_bot_key]["autostart"] = self.autostart_var.get()
+            self.bots[self.active_bot_key]["test_mode"] = self.test_mode_var.get()
+            self.bots[self.active_bot_key]["restart_days"] = int(self.slider_r_days.get())
+            self.bots[self.active_bot_key]["restart_hours"] = int(self.slider_r_hours.get())
+            self.bots[self.active_bot_key]["restart_mins"] = int(self.slider_r_mins.get())
+            self.bots[self.active_bot_key]["midnight_restart"] = self.midnight_var.get()
+            self.bots[self.active_bot_key]["error_sound"] = self.sound_var.get()
+            self.bots[self.active_bot_key]["volume"] = int(self.slider_volume.get())
+
+        self.save_config()
+        self.check_env_file()
+        messagebox.showinfo("Siker", "Sikeres mentés!")
+        self.append_log("EVENT", "Beállítások manuálisan elmentve.")
+
+    def save_config(self):
+        if getattr(self, "is_loading", False):
+            return
+
+        current_text = self.entry_path.get().strip()
+        if self.active_bot_key in self.bots:
+            if current_text and current_text != "Tallózd be a fő .py fájlt...":
+                self.bots[self.active_bot_key]["path"] = current_text
+            
+            curr = self.bots[self.active_bot_key]
+            curr["autostart"] = self.autostart_var.get()
+            curr["test_mode"] = self.test_mode_var.get()
+            curr["restart_days"] = int(self.slider_r_days.get())
+            curr["restart_hours"] = int(self.slider_r_hours.get())
+            curr["restart_mins"] = int(self.slider_r_mins.get())
+            curr["midnight_restart"] = self.midnight_var.get()
+            curr["error_sound"] = self.sound_var.get()
+            curr["volume"] = int(self.slider_volume.get())
+
+            # Automatikusan szinkronizálja a bot_config.json-t a kiválasztott bot mappájában
+            script_path = curr["path"]
+            if script_path and os.path.exists(script_path):
+                bot_dir = os.path.dirname(script_path)
+                bot_config_path = os.path.join(bot_dir, "bot_config.json")
+                try:
+                    cfg_data = {
+                        "test_mode": curr["test_mode"],
+                        "panel_id": PANEL_ID,
+                        "panel_dir": SCRIPT_DIR,
+                        "version": "1.0.0",
+                        "allowed_discord_ids": curr.get("allowed_discord_ids", []),
+                        "activity_enabled": curr.get("activity_enabled", True),
+                        "activity_type": curr.get("activity_type", "Playing"),
+                        "activity_text": curr.get("activity_text", ""),
+                        "activity_interval_minutes": curr.get("activity_interval_minutes", 5),
+                        "activity_loop": curr.get("activity_loop", [])
+                    }
+                    with open(bot_config_path, "w", encoding="utf-8") as f:
+                        json.dump(cfg_data, f, ensure_ascii=False, indent=4)
+                except Exception as e:
+                    print(f"Hiba a bot_config.json mentésekor: {e}")
+
+        bots_data = {
+            "active_bot": self.active_bot_key,
+            "bots": {}
+        }
+        for k, v in self.bots.items():
+            stored_path = v["path"]
+            if stored_path:
+                try:
+                    stored_path = os.path.relpath(stored_path, SCRIPT_DIR)
+                except ValueError:
+                    pass
+            bots_data["bots"][k] = {
+                "name": v["name"],
+                "path": stored_path,
+                "autostart": v["autostart"],
+                "test_mode": v.get("test_mode", False),
+                "restart_days": v["restart_days"],
+                "restart_hours": v["restart_hours"],
+                "restart_mins": v["restart_mins"],
+                "midnight_restart": v.get("midnight_restart", False),
+                "error_sound": v["error_sound"],
+                "volume": v.get("volume", 50),
+                "allowed_discord_ids": v.get("allowed_discord_ids", []),
+                "total_commands": v["total_commands"],
+                "weekly_uptime_seconds": v["weekly_uptime_seconds"],
+                "auto_restart_on_crash": v.get("auto_restart_on_crash", False),
+                "crash_restart_delay": v.get("crash_restart_delay", 10),
+                "activity_enabled": v.get("activity_enabled", True),
+                "activity_type": v.get("activity_type", "Playing"),
+                "activity_text": v.get("activity_text", ""),
+                "activity_interval_minutes": v.get("activity_interval_minutes", 5),
+                "activity_loop": v.get("activity_loop", [])
+            }
+
+        try:
+            with open(BOTS_FILE, "w", encoding="utf-8") as f:
+                json.dump(bots_data, f, ensure_ascii=False, indent=4)
+        except Exception as e:
+            print(f"Hiba bots.json mentéskor: {e}")
+
+        settings_data = {
+            "panel_id": PANEL_ID,
+            "language": self.current_language,
+            "minimize_to_tray": self.minimize_to_tray_enabled,
+            "panel_password": self.panel_password,
+            "error_sound_type": self.selected_error_sound,
+            "theme": self.current_theme,
+            "custom_icon": os.path.relpath(self.custom_icon_path, SCRIPT_DIR) if self.custom_icon_path else "",
+            "log_save_level": self.log_save_level,
+            "max_ram_mb": self.max_ram_mb,
+            "task_kill_enabled": self.task_kill_enabled,
+            "rpc_enabled": self.rpc_enabled,
+            "backup_enabled": self.backup_enabled,
+            "backup_on_start": self.backup_on_start,
+            "backup_interval_hours": self.backup_interval_hours,
+            "backup_last_run": self.backup_last_run
+        }
+        try:
+            with open(SETTINGS_FILE, "w", encoding="utf-8") as f:
+                json.dump(settings_data, f, ensure_ascii=False, indent=4)
+        except Exception as e:
+            print(f"Hiba settings.json mentéskor: {e}")
+
+    def load_config(self):
+        global PANEL_ID
+        if os.path.exists(BOTS_FILE):
+            try:
+                with open(BOTS_FILE, "r", encoding="utf-8") as f:
+                    data = json.load(f)
+                for k, v in data.get("bots", {}).items():
+                    configured_path = v.get("path", "")
+                    if configured_path and not os.path.isabs(configured_path):
+                        configured_path = os.path.abspath(os.path.join(SCRIPT_DIR, configured_path))
+                    b_data = self.create_bot_data(v.get("name", k), configured_path)
+                    b_data["autostart"] = v.get("autostart", False)
+                    b_data["test_mode"] = v.get("test_mode", False)
+                    b_data["restart_days"] = v.get("restart_days", 0)
+                    b_data["restart_hours"] = v.get("restart_hours", 0)
+                    b_data["restart_mins"] = v.get("restart_mins", 0)
+                    b_data["midnight_restart"] = v.get("midnight_restart", False)
+                    b_data["error_sound"] = v.get("error_sound", False)
+                    b_data["volume"] = v.get("volume", 50)
+                    b_data["allowed_discord_ids"] = v.get("allowed_discord_ids", [])
+                    b_data["total_commands"] = v.get("total_commands", 0)
+                    b_data["weekly_uptime_seconds"] = v.get("weekly_uptime_seconds", 0)
+                    b_data["auto_restart_on_crash"] = v.get("auto_restart_on_crash", False)
+                    b_data["crash_restart_delay"] = v.get("crash_restart_delay", 10)
+                    b_data["activity_enabled"] = v.get("activity_enabled", True)
+                    b_data["activity_type"] = v.get("activity_type", "Playing")
+                    b_data["activity_text"] = v.get("activity_text", "")
+                    b_data["activity_interval_minutes"] = v.get("activity_interval_minutes", 5)
+                    b_data["activity_loop"] = v.get("activity_loop", [])
+                    self.bots[k] = b_data
+                self.active_bot_key = data.get("active_bot", list(self.bots.keys())[0] if self.bots else "Main Bot")
+            except Exception as e:
+                print(f"Hiba bots.json betöltéskor: {e}")
+
+        if os.path.exists(SETTINGS_FILE):
+            try:
+                with open(SETTINGS_FILE, "r", encoding="utf-8") as f:
+                    s_data = json.load(f)
+                stored_panel_id = s_data.get("panel_id", "")
+                if isinstance(stored_panel_id, str) and stored_panel_id.startswith("#") and stored_panel_id != "#00001":
+                    PANEL_ID = stored_panel_id
+                else:
+                    PANEL_ID = "#" + secrets.token_hex(8).upper()
+                self.current_language = s_data.get("language", "English")
+                if self.current_language not in LANGUAGES:
+                    self.current_language = "English"
+                self.minimize_to_tray_enabled = s_data.get("minimize_to_tray", True)
+                self.panel_password = s_data.get("panel_password", "")
+                self.selected_error_sound = s_data.get("error_sound_type", "Alap (Beep)")
+                self.current_theme = s_data.get("theme", "Discord Sötét (Alap)")
+                self.custom_icon_path = s_data.get("custom_icon", "")
+                if self.custom_icon_path and not os.path.isabs(self.custom_icon_path):
+                    self.custom_icon_path = os.path.abspath(os.path.join(SCRIPT_DIR, self.custom_icon_path))
+                self.log_save_level = s_data.get("log_save_level", "Mindent mentse")
+                self.max_ram_mb = s_data.get("max_ram_mb", 200)
+                self.task_kill_enabled = s_data.get("task_kill_enabled", False)
+                self.rpc_enabled = s_data.get("rpc_enabled", True)
+                self.backup_enabled = s_data.get("backup_enabled", True)
+                self.backup_on_start = s_data.get("backup_on_start", False)
+                self.backup_interval_hours = max(0, int(s_data.get("backup_interval_hours", 24)))
+                self.backup_last_run = s_data.get("backup_last_run", "")
+            except Exception as e:
+                print(f"Hiba settings.json betöltéskor: {e}")
+
+        if not self.bots:
+            self.bots["Main Bot"] = self.create_bot_data("Main Bot")
+            self.active_bot_key = "Main Bot"
+
+    def start_bot(self):
+        script_path = self.entry_path.get().strip()
+        if not script_path or not os.path.exists(script_path):
+            self.append_log("ERROR", "Hiba: A megadott Python fájl nem létezik!")
+            return
+
+        bot = self.bots[self.active_bot_key]
+        if not bot["is_running"]:
+            try:
+                bot_dir = os.path.dirname(script_path)
+                python_exe = sys.executable.lower().replace("pythonw.exe", "python.exe")
+                env = os.environ.copy()
+                env["PYTHONUNBUFFERED"] = "1"
+                creationflags = subprocess.CREATE_NO_WINDOW if os.name == 'nt' else 0
+
+                bot["process"] = subprocess.Popen(
+                    [python_exe, script_path], cwd=bot_dir, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, bufsize=1, env=env, creationflags=creationflags
+                )
+                bot["is_running"] = True
+                bot["manual_stop"] = False
+                bot["start_time"] = time.time()
+                bot["path"] = script_path
+                self.lbl_status.configure(text=self.tr("online"), text_color="#2ecc71")
+                self.append_log("SUCCESS", f"Bot folyamat elindítva (PID: {bot['process'].pid})")
+                threading.Thread(target=self._read_bot_output, args=(self.active_bot_key,), daemon=True).start()
+                self.save_config()
+            except Exception as e:
+                self.append_log("ERROR", f"Indítási hiba: {e}")
+
+    def _read_bot_output(self, bot_key):
+        bot = self.bots[bot_key]
+        proc = bot["process"]
+        while bot["is_running"] and proc:
+            line = proc.stdout.readline()
+            if line:
+                cleaned_line = line.strip()
+                lower_l = cleaned_line.lower()
+                if "error" in lower_l or "exception" in lower_l:
+                    log_type = "ERROR"
+                elif "[debug]" in lower_l or "[info]" in lower_l or "event" in lower_l:
+                    log_type = "EVENT"
+                else:
+                    log_type = "INFO"
+
+                self.after(0, self.append_log_to_bot, bot_key, log_type, cleaned_line)
+            if proc.poll() is not None:
+                break
+        return_code = proc.poll()
+        if bot.get("is_running"):
+            bot["is_running"] = False
+            self.after(0, self.handle_bot_exit, bot_key, return_code)
+
+    def handle_bot_exit(self, bot_key, return_code):
+        bot = self.bots.get(bot_key)
+        if not bot:
+            return
+        bot["process"] = None
+        bot["start_time"] = None
+        self.append_log_to_bot(bot_key, "ERROR" if return_code not in (0, None) else "EVENT", "Bot folyamat váratlanul leállt (kód: %s)." % return_code)
+        if bot.get("auto_restart_on_crash") and not bot.get("manual_stop") and return_code not in (0, None):
+            delay = max(1, int(bot.get("crash_restart_delay", 10)))
+            self.append_log_to_bot(bot_key, "EVENT", "Crash watchdog: újraindítás %s másodperc múlva." % delay)
+            self.after(delay * 1000, lambda: self.restart_crashed_bot(bot_key))
+
+    def restart_crashed_bot(self, bot_key):
+        if bot_key not in self.bots or self.bots[bot_key].get("is_running"):
+            return
+        previous_key = self.active_bot_key
+        self.switch_bot(bot_key)
+        self.start_bot()
+        self.switch_bot(previous_key)
+
+    def stop_bot(self):
+        bot = self.bots[self.active_bot_key]
+        if bot["is_running"] and bot["process"]:
+            bot["manual_stop"] = True
+            bot["process"].terminate()
+            bot["process"] = None
+            bot["is_running"] = False
+            bot["start_time"] = None
+            self.lbl_status.configure(text=self.tr("offline"), text_color="#e74c3c")
+            self.append_log("EVENT", "Bot folyamat leállítva.")
+            self.save_config()
+
+    def restart_bot(self):
+        self.append_log("EVENT", "Bot újraindítása...")
+        self.stop_bot()
+        self.after(1500, self.start_bot)
+
+    def update_stats_loop(self):
+        bot = self.bots.get(self.active_bot_key)
+        self.lbl_temperature.configure(text=self.get_temperature_text())
+        if bot and bot["is_running"] and bot["process"] and bot["start_time"]:
+            elapsed = int(time.time() - bot["start_time"])
+            self.lbl_uptime.configure(text=str(datetime.timedelta(seconds=elapsed)))
+
+            self.check_auto_restarts()
+
+            bot["weekly_uptime_seconds"] += 1
+            w_hours = bot["weekly_uptime_seconds"] // 3600
+            w_mins = (bot["weekly_uptime_seconds"] % 3600) // 60
+            self.lbl_weekly_uptime.configure(text=f"{w_hours}h {w_mins}m")
+
+            try:
+                proc = psutil.Process(bot["process"].pid)
+                self.lbl_ram.configure(text=f"{proc.memory_info().rss / (1024 * 1024):.1f} MB")
+                self.lbl_cpu.configure(text=f"{proc.cpu_percent(interval=None):.1f} %")
+            except Exception:
+                pass
+
+            script_path = bot.get("path", "")
+            if script_path and os.path.exists(script_path):
+                stats_file = os.path.join(os.path.dirname(script_path), "bot_stats.json")
+                if os.path.exists(stats_file):
+                    try:
+                        with open(stats_file, "r", encoding="utf-8") as f:
+                            stats = json.load(f)
+                            self.lbl_servers.configure(text=str(stats.get("guilds", 0)))
+                            self.lbl_users.configure(text=str(stats.get("users", 0)))
+                            api_p = stats.get("api_ping", stats.get("ping", 0))
+                            msg_p = stats.get("msg_ping", stats.get("message_ping", 0))
+                            self.lbl_api_ping.configure(text=f"API: {api_p}ms")
+                            self.lbl_msg_ping.configure(text=f"Msg: {msg_p}ms")
+                    except Exception:
+                        pass
+        self.after(1000, self.update_stats_loop)
+
+    def browse_file(self):
+        file_selected = filedialog.askopenfilename(filetypes=[("Python Files", "*.py")])
+        if file_selected:
+            self.entry_path.delete(0, "end")
+            self.entry_path.insert(0, file_selected)
+            self.manual_save_path()
+
+    def append_log(self, log_type, message):
+        self.append_log_to_bot(self.active_bot_key, log_type, message)
+
+    def append_log_to_bot(self, bot_key, log_type, message):
+        if bot_key not in self.bots:
+            return
+        bot = self.bots[bot_key]
+        if log_type == "ERROR":
+            bot["error_count"] += 1
+            if bot_key == self.active_bot_key:
+                self.lbl_errors.configure(text=str(bot["error_count"]))
+            self.play_error_sound()
+        
+        timestamp = datetime.datetime.now().strftime("%H:%M:%S")
+        entry = {"time": timestamp, "date": datetime.datetime.now().strftime("%Y-%m-%d"), "type": log_type, "msg": message}
+        bot["raw_logs"].append(entry)
+        
+        self.log_event(log_type, f"[{bot_key}] {message}")
+
+        if bot_key == self.active_bot_key:
+            query = self.search_entry.get().strip().lower()
+            if not query or query in message.lower() or query in log_type.lower() or query in timestamp.lower():
+                self._write_to_textbox(entry)
+
+    def refresh_log_display(self):
+        self.log_textbox.delete("1.0", "end")
+        for entry in self.bots[self.active_bot_key]["raw_logs"]:
+            self._write_to_textbox(entry)
+
+    def _write_to_textbox(self, entry):
+        self.log_textbox.insert("end", f"[{entry['time']}][{entry['type']:<7}] {entry['msg']}\n")
+        if self.chk_autoscroll.get():
+            self.log_textbox.see("end")
+
+    def filter_logs(self, cat):
+        self.search_entry.delete(0, "end")
+        self.log_textbox.delete("1.0", "end")
+        for entry in self.bots[self.active_bot_key]["raw_logs"]:
+            if cat == "ALL" or entry["type"] == cat:
+                self._write_to_textbox(entry)
+
+    def apply_log_search_and_filter(self):
+        query = self.search_entry.get().strip().lower()
+        self.log_textbox.delete("1.0", "end")
+        for entry in self.bots[self.active_bot_key]["raw_logs"]:
+            if not query or query in entry["msg"].lower() or query in entry["type"].lower() or query in entry["time"].lower():
+                self._write_to_textbox(entry)
+
+    def clear_logs(self):
+        bot = self.bots[self.active_bot_key]
+        bot["raw_logs"].clear()
+        bot["error_count"] = 0
+        self.lbl_errors.configure(text="0")
+        self.log_textbox.delete("1.0", "end")
+        self.save_config()
+
+    def on_window_close(self):
+        if not self.minimize_to_tray_enabled:
+            self.perform_exit()
+            return
+        self.withdraw()
+        if hasattr(self, "tray_icon"):
+            return
+        try:
+            image = Image.open(DISCORD_ICON_PATH).convert("RGBA") if os.path.isfile(DISCORD_ICON_PATH) else Image.new("RGBA", (64, 64), color=(88, 101, 242))
+        except Exception:
+            image = Image.new("RGBA", (64, 64), color=(88, 101, 242))
+
+        def show_panel(icon, item):
+            icon.stop()
+            self.tray_icon = None
+            self.after(0, self.authenticate_and_show)
+
+        def quit_panel(icon, item):
+            icon.stop()
+            self.after(0, self.perform_exit)
+
+        menu = pystray.Menu(
+            pystray.MenuItem("Open Panel" if self.current_language == "English" else "Panel Megnyitása", show_panel, default=True),
+            pystray.MenuItem("Quit" if self.current_language == "English" else "Kilépés", quit_panel)
+        )
+        self.tray_icon = pystray.Icon("BotManager", image, "Bot Manager", menu)
+        threading.Thread(target=self.tray_icon.run, daemon=True).start()
+
+    def authenticate_and_show(self):
+        if not self.panel_password:
+            self.deiconify()
+            return
+        self.prompt_startup_password()
+
+    def stop_tray(self):
+        tray = getattr(self, "tray_icon", None)
+        if tray:
+            tray.stop()
+            self.tray_icon = None
+
+    def perform_exit(self, icon=None, item=None):
+        self.is_monitoring = False
+        self.rpc_enabled = False
+        if hasattr(self, 'tray_icon'):
+            self.stop_tray()
+        self.save_config()
+        for bot in self.bots.values():
+            if bot["is_running"] and bot["process"]:
+                bot["process"].terminate()
+        self.destroy()
+
+if __name__ == "__main__":
+    app = BotManagerApp()
+    app.mainloop()

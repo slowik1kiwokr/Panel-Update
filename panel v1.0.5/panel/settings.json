@@ -1,0 +1,17 @@
+{
+    "panel_id": "#0C96D3C5C505823E",
+    "language": "English",
+    "minimize_to_tray": true,
+    "panel_password": "",
+    "error_sound_type": "Alap (Beep)",
+    "theme": "Discord Sötét (Alap)",
+    "custom_icon": "",
+    "log_save_level": "Mindent mentse",
+    "max_ram_mb": 200,
+    "task_kill_enabled": false,
+    "rpc_enabled": false,
+    "backup_enabled": true,
+    "backup_on_start": false,
+    "backup_interval_hours": 24,
+    "backup_last_run": "2026-09-11T20:21:13"
+}
