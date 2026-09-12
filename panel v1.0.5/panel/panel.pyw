@@ -471,7 +471,7 @@ logging.basicConfig(
 # --- NYELVI SZÓTÁR (TRANSLATIONS) ---
 LANGUAGES = {
     "Magyar": {
-        "title": "Discord Bot Manager - Professzionális Multi-Bot Panel",
+        "title": "Discord Bot Manager - Professzionális Multi-Bot Panel | V1.2.0",
         "online": "● ONLINE",
         "offline": "● OFFLINE",
         "dashboard": "Vezérlőpult",
@@ -514,7 +514,7 @@ LANGUAGES = {
         "open_charts": "📈 Teljesítmény Grafikon"
     },
     "English": {
-        "title": "Discord Bot Manager - Professional Multi-Bot Panel",
+        "title": "Discord Bot Manager - Professional Multi-Bot Panel | V1.2.0",
         "online": "● ONLINE",
         "offline": "● OFFLINE",
         "dashboard": "Dashboard",
