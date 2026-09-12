@@ -24,6 +24,7 @@ from tkinter import filedialog, messagebox, simpledialog
 import customtkinter as ctk
 import pystray
 from PIL import Image, ImageDraw
+from version import version
 
 # Matplotlib import a grafikonokhoz
 try:
@@ -471,7 +472,7 @@ logging.basicConfig(
 # --- NYELVI SZÓTÁR (TRANSLATIONS) ---
 LANGUAGES = {
     "Magyar": {
-        "title": "Discord Bot Manager - Professzionális Multi-Bot Panel | V1.2.0",
+        "title": f"Discord Bot Manager - Professzionális Multi-Bot Panel | {version}",
         "online": "● ONLINE",
         "offline": "● OFFLINE",
         "dashboard": "Vezérlőpult",
@@ -514,7 +515,7 @@ LANGUAGES = {
         "open_charts": "📈 Teljesítmény Grafikon"
     },
     "English": {
-        "title": "Discord Bot Manager - Professional Multi-Bot Panel | V1.2.0",
+        "title": f"Discord Bot Manager - Professional Multi-Bot Panel | {version}",
         "online": "● ONLINE",
         "offline": "● OFFLINE",
         "dashboard": "Dashboard",
@@ -570,7 +571,53 @@ LANGUAGES.setdefault("Magyar", {}).update({
     "error": "Hiba", "warning": "Figyelem", "rename": "Átnevezés", "delete": "Törlés",
     "save_changes": "Mentés", "edit": "Szerkesztés", "confirm": "Megerősítés", "export": "Export"
 })
+#---------------------------------------------------------------------------------
+#   töltökép
+#---------------------------------------------------------------------------------
+class SplashScreen(ctk.CTk):
+    def __init__(self):
+        super().__init__()
 
+        self.title("Betöltés...")
+        self.geometry("500x300")
+        self.overrideredirect(True)  # keret nélküli ablak
+        self.configure(fg_color="#1e1e1e")
+
+        # Középre helyezés
+        self.update_idletasks()
+        w = self.winfo_screenwidth()
+        h = self.winfo_screenheight()
+        self.geometry(f"500x300+{int(w/2-250)}+{int(h/2-150)}")
+
+        # Logó
+        self.logo = ctk.CTkLabel(self, text="Discord Bot Manager", font=("Arial", 28, "bold"))
+        self.logo.pack(pady=20)
+
+        # Alcím
+        self.subtitle = ctk.CTkLabel(self, text="Made by: _Valii_Balint_", font=("Arial", 16))
+        self.subtitle.pack()
+
+        # Verziószám
+        self.version = ctk.CTkLabel(self, text=f"{version}", font=("Arial", 12), text_color="#888")
+        self.version.pack(pady=5)
+
+        # Töltés animáció
+        self.progress = ctk.CTkProgressBar(self, width=350)
+        self.progress.pack(pady=30)
+        self.progress.set(0)
+
+        self.animate_progress()
+
+    def animate_progress(self):
+        value = self.progress.get()
+        if value < 1:
+            self.progress.set(value + 0.01)
+            self.after(30, self.animate_progress)
+
+
+#---------------------------------------------------------------------------------
+#       panel
+#---------------------------------------------------------------------------------
 class BotManagerApp(ctk.CTk):
     def __init__(self):
         super().__init__()
@@ -3112,5 +3159,13 @@ class BotManagerApp(ctk.CTk):
 
 
 if __name__ == "__main__":
-    app = BotManagerApp()
-    app.mainloop()
+    splash = SplashScreen()
+
+    def start_panel():
+        splash.destroy()
+        app = BotManagerApp()
+        app.mainloop()
+
+    splash.after(3000, start_panel)  # 3 másodperc splash idő
+    splash.mainloop()
+
