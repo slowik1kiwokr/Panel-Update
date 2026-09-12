@@ -1,0 +1,24 @@
+# Local secrets and runtime state
+settings.json
+bots.json
+*.local.json
+version.py
+.env
+backups/
+
+# Runtime data
+logs/
+backups/
+panel_responses/
+panel_commands.json
+panel_broadcast_requests.json
+plugins/*.pyc
+
+# Python caches
+__pycache__/
+*.py[cod]
+
+# Local/generated files
+temp_app_icon.ico
+*.zip
+.vscode/
